@@ -1,18 +1,45 @@
-R Pres
+Diabetes in Pima Indians and what we can do about it
 ========================================================
 author: 
 date: 
 autosize: true
 incremental: true
 
+```{r, echo=FALSE}
+
+library(dplyr)
+library(ggplot2)
+d<-read.delim("diabetes.txt", sep=",", header=FALSE)
+d1<-d%>%rename(
+  prg = V1,
+  plasma = V2,
+  bp = V3,
+  thick = V4,
+  insulin = V5,
+  body = V6,
+  pedigree = V7,
+  age = V8,
+  response = V9
+)
+```
+
 Background
 ========================================================
 
-- Type II diabetes occurs when the body does not use insulin properly, which causes blood-sugar levels in the body to rise above normal.
-- Diabetics often use medical devices to monitor blood-sugar levels and medication to regulate insulin levels. 
-- US Pima Native Americans have the highest reported rate of Type II Diabetes of any ethnic group in the world: 34.2% and 40.8% of US Pima men and women respectively are diagnosed with Type II diabetes, compared to 9.2% and 8.3% of all American men and women respectively. 
+- Insulin: key hormone in regulating glucose levels
+- Type I: more genetic, lack of insulin production
+- Type II: more environmental, poor insulin regulation
+- 1965 study: US Pima Indians highest prevalence of Type II ever recorded
 
 ```{r, echo=FALSE}
+#Notes: Type II diabetes occurs when the body does not use insulin properly, increasing blood-sugar.
+#Diabetics often use medical devices to monitor blood-sugar levels and medication to regulate insulin levels. 
+#US Pima Native Americans have the highest reported rate of Type II Diabetes of any ethnic group in the world.
+```
+Diabetes Rate Comparison
+========================================================
+
+```{r, echo=F}
 a1<-c(34.2, "Men", "Pima")
 a2<-c(40.8, "Women", "Pima")
 a3<-c(9.2, "Men", "All")
@@ -30,19 +57,21 @@ ggplot(a1,aes(x=Group,y=Prevalence,fill=factor(Gender)))+
   xlab("Group")+ylab("Percent with T2 Diabetes")+ggtitle("Type 2 Diabetes Rates")
 ```
 
-
 Data
 ========================================================
 
--Data was collected from 768 Pima Native American females, 21+ years of age, many (37.24%) of whom tested positive for diabetes
--Variables include: Number of pregnancies, plasma glucose levels, blood pressure, skin fold thickness, insulin, BMI, family pedigree information and age 
--We found that several factors are related to Diabetes status: PRG, Plasma, Blood Pressure, BMI, Pedigree, Age, Insulin. Several of these factors had a very small (but very real) impact on someone's liklihood of developing Diabetes
--Only a few factors had a large impact on this likelihood. These factors are: BMI, Age, and Plasma
-
-Visualizations
-========================================================
+- 768 Pima, women, 21+, 35% positive for Type II Diabetes
+- Factors related to Diabetes status: PRG, Plasma, Blood Pressure, BMI, Pedigree, Age, Insulin. 
+- Fewer had a large impact on likelihood of developing diabetes: BMI, Age, and Plasma.
 
 ```{r, echo=FALSE}
+# 8 total variables, including number of pregnancies etc.
+```
+Visualization: Age
+========================================================
+```{r, echo=FALSE}
+require(ggplot2)
+require(dplyr)
 d<-read.delim("diabetes.txt", sep=",", header=FALSE)
 d1<-d%>%rename(
   prg = V1,
@@ -54,20 +83,44 @@ d1<-d%>%rename(
   pedigree = V7,
   age = V8,
   response = V9
-)
+) 
 
-d2<-filter(d1, response==1)
-d3<-filter(d1, response==0)
+d2<-filter(d1, response==1)%>%mutate(Response=factor(ifelse(response==1, "Positive", NA)))
+#positive
+d3<-filter(d1, response==0)%>%mutate(Response=factor(ifelse(response==0, "Negative", NA)))#negative
 
 ggplot(d2,aes(x=age)) + 
-    geom_histogram(data=d2,aes(x=age), fill = "red", alpha = 0.2)+
-    geom_histogram(data=d3,aes(x=age), fill = "blue", alpha = 0.2)
+  geom_histogram(data=d2,aes(x=age, fill=Response), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=age, fill=Response), alpha = 0.7)+ ggtitle("Age by T2 Diabetes Status")
+```
 
+Visualization: BMI
+========================================================
+
+```{r, echo=FALSE}
 ggplot(d2,aes(x=body)) + 
-    geom_histogram(data=d2,aes(x=body), fill = "red", alpha = 0.2)+
-    geom_histogram(data=d3,aes(x=body), fill = "blue", alpha = 0.2)+xlim(c(10,70))
+  geom_histogram(data=d2,aes(x=body, fill=Response), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=body, fill=Response), alpha = 0.7)+ xlim(10,70)+ ggtitle("BMI by T2 Diabetes Status")
+```
 
+Visualization: Plasma
+========================================================
+
+```{r, echo=FALSE}
 ggplot(d2,aes(x=plasma)) + 
-    geom_histogram(data=d2,aes(x=plasma), fill = "red", alpha = 0.2)+
-    geom_histogram(data=d3,aes(x=plasma), fill = "blue", alpha = 0.2)
+  geom_histogram(data=d2,aes(x=plasma, fill=Response), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=plasma, fill=Response), alpha = 0.7)+ ggtitle("Plasma by T2 Diabetes Status")
+```
+
+```{r, echo=FALSE}
+#Risk Factors: Increased likelihood of developing T2 when older, higher BMI, higher plasma-glucose concentration
+```
+Recommendations
+========================================================
+- Minimize BMI and plasma-glucose through healthy diet and exercise
+- Be aware of risk associated with age and genetic predisposition (pedigree)
+- Frequent testing, diet and exercise initiatives
+
+```{r, echo=FALSE}
+#community garden, mobile clinic, community-led exercise classes
 ```
