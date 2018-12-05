@@ -1,0 +1,83 @@
+---
+title: "Diabetes Code"
+author: "Maggie"
+date: "12/3/2018"
+output: pdf_document
+---
+Daniel
+```{r}
+#require(caret)
+#require(magick)
+#install.packages("pROC")
+#require(pROC)
+data <- read.delim("GIT/STAT320-SHEA/diabetes.txt", header = F, sep = ",")
+names(data) <- c("PRG", "PLASMA", "BP", "THICK", "INSULIN", "BODY", "PEDIGREE", "AGE", "RESPONSE")
+data$RESPONSE2 <- ifelse(data$RESPONSE==1,"Y","N")
+data$RESPONSE2 <- as.factor(data$RESPONSE2)
+outcomeName <- 'RESPONSE2'
+predictorsNames <- names(data)[1:8]
+splitIndex <- createDataPartition(data[,outcomeName], p = .75, list = FALSE, times = 1)
+trainDF <- data[ splitIndex,]
+testDF  <- data[-splitIndex,]
+objControl <- trainControl(method='cv', number=5, returnResamp='none', summaryFunction = twoClassSummary, classProbs = TRUE)
+objModel <- train(trainDF[,predictorsNames], trainDF[,outcomeName], 
+                  method='gbm', 
+                  trControl=objControl,  
+                  metric = "ROC",
+                  preProc = c("center", "scale"))
+summary(objModel)
+predictions <- predict(object=objModel, testDF[,predictorsNames], type='prob')
+auc <- roc(testDF$RESPONSE2, predictions[,2])
+plot(auc)
+
+predictorsNames2 <- predictorsNames[c(6,8)]
+objModel2 <- train(trainDF[,predictorsNames2], trainDF[,outcomeName], 
+                  method='gbm', 
+                  trControl=objControl,  
+                  metric = "ROC",
+                  preProc = c("center", "scale"))
+summary(objModel2)
+predictions2 <- predict(object=objModel2, testDF[,predictorsNames], type='prob')
+auc2 <- roc(testDF$RESPONSE2, predictions2[,2])
+plot(auc2)
+```
+Cassidy
+```{r}
+pima<-data
+pima %>% ggplot(aes(x=response, y = plasma, fill = response, group = response)) + geom_boxplot() + ggtitle("Plasma Levels by Diabetes Status") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none", axis.text=element_text(size=12),
+axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 18, hjust = 0.5)) + ylab("Plasma Glucose Concentration")
+
+pima %>% ggplot(aes(x = response, y = pedigree, fill = response, group = response)) + geom_boxplot() + ggtitle("Pedigree by Diabetes Status") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none", axis.text=element_text(size=12),
+axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 18, hjust = 0.5))
+
+pima %>% ggplot(aes(x = response, y = age, fill = response, group = response)) + geom_boxplot() + ggtitle("Diabetes Status by Age") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none", axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 18, hjust = 0.5)) + ylab("Age (years)") + ylab("Pedigree")
+
+pima %>% ggplot(aes(x = response, y = body, fill = response, group = response)) + geom_boxplot() + ggtitle("BMI by Diabetes Status") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none") + ylab("BMI (Weight/Height)") + theme(axis.text=element_text(size=12),
+axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 18, hjust = 0.5))
+```
+Maggie 
+```{r}
+d1<-data
+bwplot(response~plasma, data=d1)
+bwplot(response~age, data=d1)
+bwplot(response~body, data=d1)
+
+d2<-filter(d1, response==1)
+d2$Status<-"Positive"
+d2<-as.data.frame(d2)
+d3<-filter(d1, response==0)
+d3$Status<-"Negative"
+d2<-as.data.frame(d2)
+
+ggplot(d2,aes(x=age)) + 
+    geom_histogram(data=d2,aes(x=age), fill = "red", alpha = 0.2)+
+    geom_histogram(data=d3,aes(x=age), fill = "blue", alpha = 0.2)
+
+ggplot(d2,aes(x=body)) + 
+    geom_histogram(data=d2,aes(x=body), fill = "red", alpha = 0.2)+
+    geom_histogram(data=d3,aes(x=body), fill = "blue", alpha = 0.2)+xlim(c(10,70))
+
+ggplot(d2,aes(x=plasma)) + 
+    geom_histogram(data=d2,aes(x=plasma), fill = "red", alpha = 0.2)+
+    geom_histogram(data=d3,aes(x=plasma), fill = "blue", alpha = 0.2)
+```

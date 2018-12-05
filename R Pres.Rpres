@@ -1,0 +1,73 @@
+R Pres
+========================================================
+author: 
+date: 
+autosize: true
+incremental: true
+
+Background
+========================================================
+
+- Type II diabetes occurs when the body does not use insulin properly, which causes blood-sugar levels in the body to rise above normal.
+- Diabetics often use medical devices to monitor blood-sugar levels and medication to regulate insulin levels. 
+- US Pima Native Americans have the highest reported rate of Type II Diabetes of any ethnic group in the world: 34.2% and 40.8% of US Pima men and women respectively are diagnosed with Type II diabetes, compared to 9.2% and 8.3% of all American men and women respectively. 
+
+```{r, echo=FALSE}
+a1<-c(34.2, "Men", "Pima")
+a2<-c(40.8, "Women", "Pima")
+a3<-c(9.2, "Men", "All")
+a4<-c(8.3, "Women", "All")
+a<-rbind(a1,a2,a3,a4)
+colnames(a)<-c("Prevalence", "Gender", "Group")
+a<-as.data.frame(a)
+a1<-a%>%mutate(
+  Prevalence = as.numeric(as.character(Prevalence))
+)
+a1<-as.data.frame(a1)
+ggplot(a1,aes(x=Group,y=Prevalence,fill=factor(Gender)))+
+  geom_bar(stat="identity",position="dodge")+
+  scale_fill_discrete(name="Gender")+
+  xlab("Group")+ylab("Percent with T2 Diabetes")+ggtitle("Type 2 Diabetes Rates")
+```
+
+
+Data
+========================================================
+
+-Data was collected from 768 Pima Native American females, 21+ years of age, many (37.24%) of whom tested positive for diabetes
+-Variables include: Number of pregnancies, plasma glucose levels, blood pressure, skin fold thickness, insulin, BMI, family pedigree information and age 
+-We found that several factors are related to Diabetes status: PRG, Plasma, Blood Pressure, BMI, Pedigree, Age, Insulin. Several of these factors had a very small (but very real) impact on someone's liklihood of developing Diabetes
+-Only a few factors had a large impact on this likelihood. These factors are: BMI, Age, and Plasma
+
+Visualizations
+========================================================
+
+```{r, echo=FALSE}
+d<-read.delim("diabetes.txt", sep=",", header=FALSE)
+d1<-d%>%rename(
+  prg = V1,
+  plasma = V2,
+  bp = V3,
+  thick = V4,
+  insulin = V5,
+  body = V6,
+  pedigree = V7,
+  age = V8,
+  response = V9
+)
+
+d2<-filter(d1, response==1)
+d3<-filter(d1, response==0)
+
+ggplot(d2,aes(x=age)) + 
+    geom_histogram(data=d2,aes(x=age), fill = "red", alpha = 0.2)+
+    geom_histogram(data=d3,aes(x=age), fill = "blue", alpha = 0.2)
+
+ggplot(d2,aes(x=body)) + 
+    geom_histogram(data=d2,aes(x=body), fill = "red", alpha = 0.2)+
+    geom_histogram(data=d3,aes(x=body), fill = "blue", alpha = 0.2)+xlim(c(10,70))
+
+ggplot(d2,aes(x=plasma)) + 
+    geom_histogram(data=d2,aes(x=plasma), fill = "red", alpha = 0.2)+
+    geom_histogram(data=d3,aes(x=plasma), fill = "blue", alpha = 0.2)
+```
