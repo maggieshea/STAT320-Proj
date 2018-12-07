@@ -1,27 +1,30 @@
 Diabetes in Pima Indians and what we can do about it
 ========================================================
-author: 
-date: 
+author: Amalia, Cassidy, Daniel, Maggie
+date: STAT320
 autosize: true
 incremental: true
+transition: rotate
+transition-speed: fast
 
-```{r, echo=FALSE}
+```{r setup and load, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
 
+library(gridExtra)
 library(dplyr)
 library(ggplot2)
-d<-read.delim("diabetes.txt", sep=",", header=FALSE)
-d1<-d%>%rename(
-  prg = V1,
-  plasma = V2,
-  bp = V3,
-  thick = V4,
-  insulin = V5,
-  body = V6,
-  pedigree = V7,
-  age = V8,
-  response = V9
-)
+d <- read.delim("diabetes.txt", sep=",", header=T)
+names(d) <- c("prg", "plasma", "bp", "thick", "insulin", "body", "pedigree", "age", "response")
 ```
+
+Overview
+========================================================
+
+- Background
+- Data
+- Model
+- Recommendations
+
 
 Background
 ========================================================
@@ -31,90 +34,177 @@ Background
 - Type II: more environmental, poor insulin regulation
 - 1965 study: US Pima Indians highest prevalence of Type II ever recorded
 
-```{r, echo=FALSE}
+```{r}
 #Notes: Type II diabetes occurs when the body does not use insulin properly, increasing blood-sugar.
 #Diabetics often use medical devices to monitor blood-sugar levels and medication to regulate insulin levels. 
 #US Pima Native Americans have the highest reported rate of Type II Diabetes of any ethnic group in the world.
 ```
-Diabetes Rate Comparison
-========================================================
-
-```{r, echo=F}
-a1<-c(34.2, "Men", "Pima")
-a2<-c(40.8, "Women", "Pima")
-a3<-c(9.2, "Men", "All")
-a4<-c(8.3, "Women", "All")
-a<-rbind(a1,a2,a3,a4)
-colnames(a)<-c("Prevalence", "Gender", "Group")
-a<-as.data.frame(a)
-a1<-a%>%mutate(
-  Prevalence = as.numeric(as.character(Prevalence))
-)
-a1<-as.data.frame(a1)
-ggplot(a1,aes(x=Group,y=Prevalence,fill=factor(Gender)))+
-  geom_bar(stat="identity",position="dodge")+
-  scale_fill_discrete(name="Gender")+
-  xlab("Group")+ylab("Percent with T2 Diabetes")+ggtitle("Type 2 Diabetes Rates")
-```
 
 Data
 ========================================================
+incremental: false
 
-- 768 Pima, women, 21+, 35% positive for Type II Diabetes
-- Factors related to Diabetes status: PRG, Plasma, Blood Pressure, BMI, Pedigree, Age, Insulin. 
-- Fewer had a large impact on likelihood of developing diabetes: BMI, Age, and Plasma.
+- 768 Pima women, 21+, 35% positive for Type II Diabetes
 
-```{r, echo=FALSE}
-# 8 total variables, including number of pregnancies etc.
+```{r, fig.height=8, fig.width=14}
+df1 <- data.frame("Prevalence" = c(34.2,40.8,9.2,8.3), "Gender" = c("Men", "Women", "Men", "Women"), "Group" = c("Pima","Pima","All","All"))
+
+df1 %>% 
+ggplot(aes(x=Group,y=Prevalence,fill=factor(Gender))) +
+  geom_bar(stat="identity",position="dodge") +
+  scale_fill_discrete(name="Gender") +
+  xlab("Group") + ylab("Percent with T2 Diabetes") + ggtitle("Type 2 Diabetes Rates") +
+  theme(title = element_text(size=42), axis.title.x = element_text(size=32), axis.title.y = element_text(size=32), legend.text = element_text(size=32), axis.text.x = element_text(size=20), axis.text.y = element_text(size=20))
 ```
-Visualization: Age
+
+
+Data: variables
 ========================================================
-```{r, echo=FALSE}
-require(ggplot2)
-require(dplyr)
-d<-read.delim("diabetes.txt", sep=",", header=FALSE)
-d1<-d%>%rename(
-  prg = V1,
-  plasma = V2,
-  bp = V3,
-  thick = V4,
-  insulin = V5,
-  body = V6,
-  pedigree = V7,
-  age = V8,
-  response = V9
-) 
+transition: none
+left: 60%
 
-d2<-filter(d1, response==1)%>%mutate(Response=factor(ifelse(response==1, "Positive", NA)))
-#positive
-d3<-filter(d1, response==0)%>%mutate(Response=factor(ifelse(response==0, "Negative", NA)))#negative
+- PRG: number of pregnancies
+- PLASMA: blood plasma
+- BP: blood pressure
+- THICK: triceps fold skin thickness
+- INSULIN: saliva insulin levels
+- BODY: body mass index (BMI)
+- PEDIGREE: function relating to family history of T2 diabetes
+- AGE: age of woman
+- RESPONSE: whether or not they had diabetes
 
-ggplot(d2,aes(x=age)) + 
+***
+
+Data: the most important variables
+========================================================
+transition: none
+incremental: false
+left: 60%
+
+- PRG: number of pregnancies
+- **PLASMA**: blood plasma
+- BP: blood pressure
+- THICK: triceps fold skin thickness
+- INSULIN: saliva insulin levels
+- **BODY**: body mass index (BMI)
+- **PEDIGREE**: function relating to family history of T2 diabetes
+- **AGE**: age of woman
+- RESPONSE: whether or not they had diabetes
+
+***
+
+```{r, fig.height=10}
+df <- data.frame("var"=c("PRG","PLASMA","BP","THICK","INSULIN","BODY","PEDIGREE","AGE"), "val" =c(6.4, 42, 1.8, 1.4, 2.5, 21.7, 9.7, 14.5)) 
+df$var <- factor(df$var, levels(df$var) <- rev(c("PRG","PLASMA","BP","THICK","INSULIN","BODY","PEDIGREE","AGE")) )
+
+df %>% 
+  ggplot(aes(factor(var), val)) + geom_bar(stat='identity') +
+  labs(title="Relative Influence",y="",x="") +
+  theme(title=element_text(size=30), axis.text.y = element_text(size=16)) + coord_flip()
+
+#               var   rel.inf
+# PLASMA     PLASMA 42.058613
+# BODY         BODY 21.627825
+# AGE           AGE 14.526647
+# PEDIGREE PEDIGREE  9.729920
+# PRG           PRG  6.379842
+# INSULIN   INSULIN  2.493085
+# BP             BP  1.775946
+# THICK       THICK  1.408122
+```
+
+
+Data: the easiest variables to measure
+========================================================
+transition: false
+incremental: false
+left: 60%
+
+- PRG: number of pregnancies
+- PLASMA: blood plasma
+- **BP: blood pressure**
+- THICK: triceps fold skin thickness
+- BODY: body mass index (BMI)
+- PEDIGREE: function relating to family history of T2 diabetes
+- **AGE: age of woman**
+- RESPONSE: whether or not they had diabetes
+
+***
+
+========================================================
+transition: none
+```{r, fig.height=10, fig.width=10, fig.align="center"}
+d2<-filter(d, response==1)%>%mutate(Response=factor(ifelse(response==1, "Positive", NA)))#positive
+d3<-filter(d, response==0)%>%mutate(Response=factor(ifelse(response==0, "Negative", NA)))#negative
+
+p0 <- ggplot(data.frame()) + geom_blank() + theme(panel.background=element_blank())
+
+p1 <- ggplot(d2,aes(x=plasma)) + 
+  geom_histogram(data=d2,aes(x=plasma, fill=Response), alpha = 0.7) +
+  geom_histogram(data=d3,aes(x=plasma, fill=Response), alpha = 0.7) + theme(legend.position = "none", plot.title=element_text(hjust=0.5)) + labs(x="", y="", title="Plasma") +  theme(title = element_text(size=16))
+
+p2 <- ggplot(d2,aes(x=age)) + 
   geom_histogram(data=d2,aes(x=age, fill=Response), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=age, fill=Response), alpha = 0.7)+ ggtitle("Age by T2 Diabetes Status")
-```
+  geom_histogram(data=d3,aes(x=age, fill=Response), alpha = 0.7) + theme(legend.position = "none", plot.title=element_text(hjust=0.5)) + labs(x="", y="", title="Age")+  theme(title = element_text(size=16))
 
-Visualization: BMI
-========================================================
+p3 <- ggplot(d2,aes(x=pedigree)) + 
+  geom_histogram(data=d2,aes(x=pedigree, fill=Response), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=pedigree, fill=Response), alpha = 0.7)+ theme(legend.position = "none", plot.title=element_text(hjust=0.5)) + labs(x="", y="", title="Pedigree")+  theme(title = element_text(size=16))
 
-```{r, echo=FALSE}
-ggplot(d2,aes(x=body)) + 
+p4 <- ggplot(d2,aes(x=body)) + 
   geom_histogram(data=d2,aes(x=body, fill=Response), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=body, fill=Response), alpha = 0.7)+ xlim(10,70)+ ggtitle("BMI by T2 Diabetes Status")
+  geom_histogram(data=d3,aes(x=body, fill=Response), alpha = 0.7)+ theme(legend.position = "none", plot.title=element_text(hjust=0.5)) + labs(x="", y="", title="BMI")+  theme(title = element_text(size=16))
+
+grid.arrange(p1, p0, p0, p0, nrow = 2)
 ```
 
-Visualization: Plasma
+========================================================
+transition: none
+```{r, fig.height=10, fig.width=10, fig.align="center"}
+grid.arrange(p1, p2, p0, p0, nrow = 2)
+```
+
+========================================================
+transition: none
+```{r, fig.height=10, fig.width=10, fig.align="center"}
+grid.arrange(p1, p2, p3, p0, nrow = 2)
+```
+
+========================================================
+transition: none
+```{r, fig.height=10, fig.width=10, fig.align="center"}
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+```
+
+
+Model
 ========================================================
 
-```{r, echo=FALSE}
-ggplot(d2,aes(x=plasma)) + 
-  geom_histogram(data=d2,aes(x=plasma, fill=Response), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=plasma, fill=Response), alpha = 0.7)+ ggtitle("Plasma by T2 Diabetes Status")
+2 models
+
+- Model 1: using all 8 variables
+  + 79% overall accuracy
+  + 85% probability of detecting diabetes in those who had it 
+  + 69% probability of not detecting diabetes who did not have it
+  
+- Model 2: using only BP and Age
+  + 70% overall accuracy
+  + 80% probability of detecting diabetes in those who had it 
+  + 50% probability of not detecting diabetes who did not have it
+
+```{r, echo=F}
+# AUC is too technical? 85% though
 ```
 
-```{r, echo=FALSE}
-#Risk Factors: Increased likelihood of developing T2 when older, higher BMI, higher plasma-glucose concentration
-```
+Takeaways
+========================================================
+
+- If lab data is available, i.e. plasma, use the full model
+  + Even if other variables are unavailable, just impute mean values.
+  + Live Shiny app [here](TBD.com) for getting live predictions
+- In the field, BMI/Age does a pretty good job
+  + But decent probability of a false negative
+
 Recommendations
 ========================================================
 - Minimize BMI and plasma-glucose through healthy diet and exercise
@@ -124,3 +214,14 @@ Recommendations
 ```{r, echo=FALSE}
 #community garden, mobile clinic, community-led exercise classes
 ```
+
+
+- Factors related to Diabetes status: PRG, Plasma, Blood Pressure, BMI, Pedigree, Age, Insulin. 
+- Fewer had a large impact on likelihood of developing diabetes: BMI, Age, and Plasma.
+
+Limitations
+========================================================
+
+- Sample population (represents American Pima Indians)
+- Age (21+)
+- Gender (Women only)
