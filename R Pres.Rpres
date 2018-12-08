@@ -116,7 +116,7 @@ df %>%
 
 Data: the easiest variables to measure
 ========================================================
-transition: false
+transition: none
 incremental: false
 left: 60%
 
