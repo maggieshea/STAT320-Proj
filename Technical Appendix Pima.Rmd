@@ -10,7 +10,7 @@ Daniel
 #require(magick)
 #install.packages("pROC")
 #require(pROC)
-data <- read.delim("GIT/STAT320-SHEA/diabetes.txt", header = F, sep = ",")
+data <- read.delim("diabetes.txt", header = F, sep = ",")
 names(data) <- c("PRG", "PLASMA", "BP", "THICK", "INSULIN", "BODY", "PEDIGREE", "AGE", "RESPONSE")
 data$RESPONSE2 <- ifelse(data$RESPONSE==1,"Y","N")
 data$RESPONSE2 <- as.factor(data$RESPONSE2)
@@ -41,21 +41,98 @@ predictions2 <- predict(object=objModel2, testDF[,predictorsNames], type='prob')
 auc2 <- roc(testDF$RESPONSE2, predictions2[,2])
 plot(auc2)
 ```
+
 Cassidy
 ```{r}
-pima<-data
-pima %>% ggplot(aes(x=response, y = plasma, fill = response, group = response)) + geom_boxplot() + ggtitle("Plasma Levels by Diabetes Status") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none", axis.text=element_text(size=12),
+library(tidyverse)
+pima <- data
+
+pima <- pima %>% mutate(RESPONSE = ifelse(RESPONSE == 0, "No", "Yes"))
+
+group.colors <- c(No = "cornflowerblue", Yes = "firebrick3")
+
+pima %>% ggplot(aes(x=RESPONSE, y = PLASMA, fill = RESPONSE, group = RESPONSE)) + geom_boxplot() + ggtitle("Plasma Levels by Diabetes Status") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none", axis.text=element_text(size=12),
 axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 18, hjust = 0.5)) + ylab("Plasma Glucose Concentration")
 
-pima %>% ggplot(aes(x = response, y = pedigree, fill = response, group = response)) + geom_boxplot() + ggtitle("Pedigree by Diabetes Status") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none", axis.text=element_text(size=12),
+pima %>% ggplot(aes(x = RESPONSE, y = PEDIGREE, fill = RESPONSE, group = RESPONSE)) + geom_boxplot() + ggtitle("Pedigree by Diabetes Status") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none", axis.text=element_text(size=12),
 axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 18, hjust = 0.5))
 
-pima %>% ggplot(aes(x = response, y = age, fill = response, group = response)) + geom_boxplot() + ggtitle("Diabetes Status by Age") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none", axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 18, hjust = 0.5)) + ylab("Age (years)") + ylab("Pedigree")
+pima %>% ggplot(aes(x = RESPONSE, y = AGE, fill = RESPONSE, group = RESPONSE)) + geom_boxplot() + ggtitle("Diabetes Status by Age") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none", axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 18, hjust = 0.5)) + ylab("Age (years)") + ylab("Pedigree")
 
-pima %>% ggplot(aes(x = response, y = body, fill = response, group = response)) + geom_boxplot() + ggtitle("BMI by Diabetes Status") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none") + ylab("BMI (Weight/Height)") + theme(axis.text=element_text(size=12),
+pima %>% ggplot(aes(x = RESPONSE, y = BODY, fill = RESPONSE, group = RESPONSE)) + geom_boxplot() + ggtitle("BMI by Diabetes Status") + scale_x_discrete(name = "Tested positive for diabetes?") + scale_fill_manual(values = group.colors) + theme(legend.position="none") + ylab("BMI (Weight/Height)") + theme(axis.text=element_text(size=12),
 axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 18, hjust = 0.5))
+
+pima %>% 
+  filter(BODY!=0) %>% 
+  mutate(BODY=ifelse(BODY < 18.5, "underweight", 
+         ifelse(BODY > 40, "morbid", ifelse(BODY > 30, "obese", ifelse(BODY > 25, "overweight", "normal"))))) %>%
+  group_by(BODY, RESPONSE) %>% 
+  summarize(n = n()) %>% 
+  mutate(PERCENT = (n / sum(n))*100) %>% data.frame() -> temp
+
+
+temp %>% 
+  filter(RESPONSE=="Yes") %>% 
+  ggplot(aes(BODY,  PERCENT)) + geom_bar(stat='identity', fill = "firebrick3") + 
+  scale_x_discrete(limits=c("normal","overweight","obese","morbid"), labels=c("Normal","Overweight","Obese","Morbid")) + xlab("Weight Class (by BMI)") + 
+  ylab("% of Positive Diabetes Test Results") + 
+  theme(axis.text=element_text(size=15), axis.title=element_text(size=16,face="bold"), 
+        plot.title = element_text(size = 18, hjust = 0.5)) + 
+  ggtitle("% of Positive Test Results by Weight Class") + coord_cartesian(ylim=c(0,60))
+
+
+pima %>% 
+  mutate(AGE = ifelse(AGE < 30, "<30", 
+         ifelse(AGE < 40, "30-49", ifelse(AGE < 50, "40-59", ifelse(AGE < 60, "60-69", "70+"))))) %>%
+  group_by(AGE, RESPONSE) %>% 
+  summarize(n = n()) %>% 
+  mutate(PERCENT = (n / sum(n))*100) %>% data.frame() -> temp1
+
+
+temp1 %>% 
+  filter(RESPONSE=="Yes") %>% 
+  ggplot(aes(AGE,  PERCENT)) + geom_bar(stat='identity', fill = "firebrick3") + 
+  xlab("Age Group") + 
+  ylab("% of Positive Diabetes Test Results") + 
+  theme(axis.text=element_text(size=15), axis.title=element_text(size=16,face="bold"), 
+        plot.title = element_text(size = 18, hjust = 0.5)) + 
+  ggtitle("% of Positive Test Results by Age Group")
+
+pima %>% 
+  mutate(BP = ifelse(BP < 60, "Low", 
+         ifelse(BP < 80, "Ideal", ifelse(BP < 90, "Pre-High", "High")))) %>%
+  group_by(BP, RESPONSE) %>% 
+  summarize(n = n()) %>% 
+  mutate(PERCENT = (n / sum(n))*100) %>% data.frame() -> temp2
+
+temp2 %>% 
+  filter(RESPONSE=="Yes") %>% 
+  ggplot(aes(BP,  PERCENT)) + geom_bar(stat='identity', fill = "firebrick3") + 
+  scale_x_discrete(limits=c("Low","Ideal","Pre-High","High")) + xlab("Blood Pressure") + 
+  ylab("% of Positive Diabetes Test Results") + 
+  theme(axis.text=element_text(size=15), axis.title=element_text(size=16,face="bold"), 
+        plot.title = element_text(size = 18, hjust = 0.5)) + 
+  ggtitle("% of Positive Test Results by Blood Pressure") + coord_cartesian(ylim=c(0,60))
+
+pima %>% 
+  mutate(PLASMA = ifelse(PLASMA < 100, "Normal", 
+         ifelse(PLASMA < 125, "Pre-Diabetic", "Diabetic"))) %>%
+  group_by(PLASMA, RESPONSE) %>% 
+  summarize(n = n()) %>% 
+  mutate(PERCENT = (n / sum(n))*100) %>% data.frame() -> temp3
+
+temp3 %>% 
+  filter(RESPONSE=="Yes") %>% 
+  ggplot(aes(PLASMA,  PERCENT)) + geom_bar(stat='identity', fill = "firebrick3") + 
+  scale_x_discrete(limits=c("Normal","Pre-Diabetic","Diabetic")) + xlab("Blood Glucose Reading") + 
+  ylab("% of Positive Diabetes Test Results") + 
+  theme(axis.text=element_text(size=15), axis.title=element_text(size=16,face="bold"), 
+        plot.title = element_text(size = 18, hjust = 0.5)) + 
+  ggtitle("% of Positive Test Results by Blood Glucose Reading") + coord_cartesian(ylim=c(0,60))
 ```
-Maggie 
+
+
+Maggie Work
 ```{r}
 d1<-data
 bwplot(response~plasma, data=d1)
@@ -81,3 +158,5 @@ ggplot(d2,aes(x=plasma)) +
     geom_histogram(data=d2,aes(x=plasma), fill = "red", alpha = 0.2)+
     geom_histogram(data=d3,aes(x=plasma), fill = "blue", alpha = 0.2)
 ```
+
+
