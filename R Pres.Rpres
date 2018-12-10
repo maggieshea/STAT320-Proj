@@ -1,4 +1,4 @@
-Diabetes in Pima Indians and what we can do about it
+Diabetes Risk Among US Pima Native Americans
 ========================================================
 author: Amalia, Cassidy, Daniel, Maggie
 date: STAT320
@@ -137,10 +137,11 @@ left: 60%
 
 ***
 
+
 ========================================================
 transition: none
 
-```{r, fig.height=10, fig.width=10, fig.align="center"}
+```{r, fig.height=9, fig.width=9, fig.align="center"}
 d2<-filter(d, response==1)%>%mutate(Diabetes=factor(ifelse(response==1, "Positive", NA)))#positive
 d3<-filter(d, response==0)%>%mutate(Diabetes=factor(ifelse(response==0, "Negative", NA)))#negative
 
@@ -176,7 +177,7 @@ Model
   + 85% probability of detecting diabetes in those who had it 
   + 69% probability of not detecting diabetes who did not have it
   
-- Model 2: using only BP and Age
+- Model 2: using only BMI and Age
   + 70% overall accuracy
   + 80% probability of detecting diabetes in those who had it 
   + 50% probability of not detecting diabetes who did not have it
@@ -189,7 +190,7 @@ Takeaways
 ========================================================
 
 - If lab data is available, i.e. plasma, use the full model
-  + Even if other variables are unavailable, just impute mean values.
+  + Fill in missing data using average values.
   + Live Shiny app [here](TBD.com) for getting live predictions
 - In the field, BMI/Age does a pretty good job
   + But decent probability of a false negative
