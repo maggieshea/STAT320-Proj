@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = FALSE)
 library(gridExtra)
 library(dplyr)
 library(ggplot2)
+library(ggpubr)
 d <- read.delim("diabetes.txt", sep=",", header=T)
 names(d) <- c("prg", "plasma", "bp", "thick", "insulin", "body", "pedigree", "age", "response")
 ```
@@ -138,49 +139,32 @@ left: 60%
 
 ========================================================
 transition: none
+
 ```{r, fig.height=10, fig.width=10, fig.align="center"}
-d2<-filter(d, response==1)%>%mutate(Response=factor(ifelse(response==1, "Positive", NA)))#positive
-d3<-filter(d, response==0)%>%mutate(Response=factor(ifelse(response==0, "Negative", NA)))#negative
+d2<-filter(d, response==1)%>%mutate(Diabetes=factor(ifelse(response==1, "Positive", NA)))#positive
+d3<-filter(d, response==0)%>%mutate(Diabetes=factor(ifelse(response==0, "Negative", NA)))#negative
 
 p0 <- ggplot(data.frame()) + geom_blank() + theme(panel.background=element_blank())
 
 p1 <- ggplot(d2,aes(x=plasma)) + 
-  geom_histogram(data=d2,aes(x=plasma, fill=Response), alpha = 0.7) +
-  geom_histogram(data=d3,aes(x=plasma, fill=Response), alpha = 0.7) + theme(legend.position = "none", plot.title=element_text(hjust=0.5)) + labs(x="", y="", title="Plasma") +  theme(title = element_text(size=16))
+  geom_histogram(data=d2,aes(x=plasma, fill=Diabetes), alpha = 0.7) +
+  geom_histogram(data=d3,aes(x=plasma, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Plasma Glucose Concentration", y="Number of People", title="Plasma") +  theme(title = element_text(size=16), legend.position = "none")
 
 p2 <- ggplot(d2,aes(x=age)) + 
-  geom_histogram(data=d2,aes(x=age, fill=Response), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=age, fill=Response), alpha = 0.7) + theme(legend.position = "none", plot.title=element_text(hjust=0.5)) + labs(x="", y="", title="Age")+  theme(title = element_text(size=16))
+  geom_histogram(data=d2,aes(x=age, fill=Diabetes), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=age, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Age (In Years)", y="Number of People", title="Age")+  theme(title = element_text(size=16), legend.position="none")
 
 p3 <- ggplot(d2,aes(x=pedigree)) + 
-  geom_histogram(data=d2,aes(x=pedigree, fill=Response), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=pedigree, fill=Response), alpha = 0.7)+ theme(legend.position = "none", plot.title=element_text(hjust=0.5)) + labs(x="", y="", title="Pedigree")+  theme(title = element_text(size=16))
+  geom_histogram(data=d2,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="Pedigree Function Value", y="Number of People", title="Pedigree")+  theme(title = element_text(size=16), legend.position = "none")
 
 p4 <- ggplot(d2,aes(x=body)) + 
-  geom_histogram(data=d2,aes(x=body, fill=Response), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=body, fill=Response), alpha = 0.7)+ theme(legend.position = "none", plot.title=element_text(hjust=0.5)) + labs(x="", y="", title="BMI")+  theme(title = element_text(size=16))
+  geom_histogram(data=d2,aes(x=body, fill=Diabetes), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=body, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="BMI", y="Number of People", title="Body Mass Index")+  theme(title = element_text(size=16), legend.position = "bottom")
 
-grid.arrange(p1, p0, p0, p0, nrow = 2)
+#grid.arrange(p1, p0, p0, p0, nrow = 2)
+ggarrange(p1, p2, p3, p4, ncol=2, nrow=2, common.legend = TRUE, legend="bottom")
 ```
-
-========================================================
-transition: none
-```{r, fig.height=10, fig.width=10, fig.align="center"}
-grid.arrange(p1, p2, p0, p0, nrow = 2)
-```
-
-========================================================
-transition: none
-```{r, fig.height=10, fig.width=10, fig.align="center"}
-grid.arrange(p1, p2, p3, p0, nrow = 2)
-```
-
-========================================================
-transition: none
-```{r, fig.height=10, fig.width=10, fig.align="center"}
-grid.arrange(p1, p2, p3, p4, nrow = 2)
-```
-
 
 Model
 ========================================================
