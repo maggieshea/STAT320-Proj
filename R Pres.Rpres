@@ -63,14 +63,14 @@ Data: variables
 transition: none
 left: 60%
 
-- PRG: number of pregnancies
 - PLASMA: blood plasma
+- BODY: body mass index (BMI)
+- AGE: age of woman
+- PEDIGREE: function relating to family history of T2 diabetes
+- PRG: number of pregnancies
+- INSULIN: saliva insulin levels
 - BP: blood pressure
 - THICK: triceps fold skin thickness
-- INSULIN: saliva insulin levels
-- BODY: body mass index (BMI)
-- PEDIGREE: function relating to family history of T2 diabetes
-- AGE: age of woman
 - RESPONSE: whether or not they had diabetes
 
 ***
@@ -81,21 +81,24 @@ transition: none
 incremental: false
 left: 60%
 
+- **PLASMA: blood plasma**
+- **BODY: body mass index (BMI)**
+- **AGE: age of woman**
+- **PEDIGREE: function relating to family history of T2 diabetes**
 - PRG: number of pregnancies
-- **PLASMA**: blood plasma
+- INSULIN: saliva insulin levels
 - BP: blood pressure
 - THICK: triceps fold skin thickness
-- INSULIN: saliva insulin levels
-- **BODY**: body mass index (BMI)
-- **PEDIGREE**: function relating to family history of T2 diabetes
-- **AGE**: age of woman
 - RESPONSE: whether or not they had diabetes
+
 
 ***
 
 ```{r, fig.height=10}
-df <- data.frame("var"=c("PRG","PLASMA","BP","THICK","INSULIN","BODY","PEDIGREE","AGE"), "val" =c(6.4, 42, 1.8, 1.4, 2.5, 21.7, 9.7, 14.5)) 
-df$var <- factor(df$var, levels(df$var) <- rev(c("PRG","PLASMA","BP","THICK","INSULIN","BODY","PEDIGREE","AGE")) )
+
+
+df <- data.frame("var"=c("PLASMA","BODY","AGE","PEDIGREE","PRG","INSULIN","BP","THICK"), "val" =c(42,21.7,14.5,9.7,6.4,2.5,1.8,1.4)) 
+df$var <- factor(df$var, levels(df$var) <- rev(c("PLASMA","BODY","AGE","PEDIGREE","PRG","INSULIN","BP","THICK")) )
 
 df %>% 
   ggplot(aes(factor(var), val)) + geom_bar(stat='identity') +
@@ -120,13 +123,15 @@ transition: none
 incremental: false
 left: 60%
 
-- PRG: number of pregnancies
+
 - PLASMA: blood plasma
-- **BP: blood pressure**
-- THICK: triceps fold skin thickness
-- BODY: body mass index (BMI)
-- PEDIGREE: function relating to family history of T2 diabetes
+- **BODY: body mass index (BMI)**
 - **AGE: age of woman**
+- PEDIGREE: function relating to family history of T2 diabetes
+- PRG: number of pregnancies
+- INSULIN: saliva insulin levels
+- BP: blood pressure
+- THICK: triceps fold skin thickness
 - RESPONSE: whether or not they had diabetes
 
 ***
