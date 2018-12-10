@@ -6,10 +6,10 @@ output: pdf_document
 ---
 Daniel
 ```{r}
-#require(caret)
-#require(magick)
+require(caret)
+require(magick)
 #install.packages("pROC")
-#require(pROC)
+require(pROC)
 data <- read.delim("diabetes.txt", header = F, sep = ",")
 names(data) <- c("PRG", "PLASMA", "BP", "THICK", "INSULIN", "BODY", "PEDIGREE", "AGE", "RESPONSE")
 data$RESPONSE2 <- ifelse(data$RESPONSE==1,"Y","N")
@@ -134,29 +134,39 @@ temp3 %>%
 
 Maggie Work
 ```{r}
-d1<-data
+#install.packages("rgr")
+require(rgr)
+require(lattice)
+require(janitor)
+require(ggpubr)
+
+d1<-pima %>% clean_names()
 bwplot(response~plasma, data=d1)
 bwplot(response~age, data=d1)
 bwplot(response~body, data=d1)
 
-d2<-filter(d1, response==1)
-d2$Status<-"Positive"
-d2<-as.data.frame(d2)
-d3<-filter(d1, response==0)
-d3$Status<-"Negative"
-d2<-as.data.frame(d2)
+d2<-filter(d1, response==1)%>%mutate(Diabetes=factor(ifelse(response==1, "Positive", NA)))#positive
+d3<-filter(d1, response==0)%>%mutate(Diabetes=factor(ifelse(response==0, "Negative", NA)))#negative
 
-ggplot(d2,aes(x=age)) + 
-    geom_histogram(data=d2,aes(x=age), fill = "red", alpha = 0.2)+
-    geom_histogram(data=d3,aes(x=age), fill = "blue", alpha = 0.2)
+p0 <- ggplot(data.frame()) + geom_blank() + theme(panel.background=element_blank())
 
-ggplot(d2,aes(x=body)) + 
-    geom_histogram(data=d2,aes(x=body), fill = "red", alpha = 0.2)+
-    geom_histogram(data=d3,aes(x=body), fill = "blue", alpha = 0.2)+xlim(c(10,70))
+p1 <- ggplot(d2,aes(x=plasma)) + 
+  geom_histogram(data=d2,aes(x=plasma, fill=Diabetes), alpha = 0.7) +
+  geom_histogram(data=d3,aes(x=plasma, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Plasma Glucose Concentration", y="Number of People", title="Plasma") +  theme(title = element_text(size=16), legend.position = "none")
 
-ggplot(d2,aes(x=plasma)) + 
-    geom_histogram(data=d2,aes(x=plasma), fill = "red", alpha = 0.2)+
-    geom_histogram(data=d3,aes(x=plasma), fill = "blue", alpha = 0.2)
+p2 <- ggplot(d2,aes(x=age)) + 
+  geom_histogram(data=d2,aes(x=age, fill=Diabetes), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=age, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Age (In Years)", y="Number of People", title="Age")+  theme(title = element_text(size=16), legend.position="none")
+
+p3 <- ggplot(d2,aes(x=pedigree)) + 
+  geom_histogram(data=d2,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="Pedigree Function Value", y="Number of People", title="Pedigree")+  theme(title = element_text(size=16), legend.position = "none")
+
+p4 <- ggplot(d2,aes(x=body)) + 
+  geom_histogram(data=d2,aes(x=body, fill=Diabetes), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=body, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="BMI", y="Number of People", title="Body Mass Index")+  theme(title = element_text(size=16), legend.position = "bottom")
+
+ggarrange(p1, p2, p3, p4, ncol=2, nrow=2, common.legend = TRUE, legend="bottom")
 ```
 
 
