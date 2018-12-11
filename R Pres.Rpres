@@ -197,17 +197,12 @@ Takeaways
 
 Recommendations
 ========================================================
-- Minimize BMI and plasma-glucose through healthy diet and exercise
+- Minimize BMI and plasma-glucose
+  + Diet initiative
+  + Exercise initiative
+  + Community garden
 - Be aware of risk associated with age and genetic predisposition (pedigree)
-- Frequent testing, diet and exercise initiatives
-
-```{r, echo=FALSE}
-#community garden, mobile clinic, community-led exercise classes
-```
-
-
-- Factors related to Diabetes status: PRG, Plasma, Blood Pressure, BMI, Pedigree, Age, Insulin. 
-- Fewer had a large impact on likelihood of developing diabetes: BMI, Age, and Plasma.
+  + Monthly mobile clinic
 
 Limitations
 ========================================================
