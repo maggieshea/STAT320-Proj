@@ -1,19 +1,41 @@
 ---
-title: "Diabetes Code"
-author: "Maggie"
-date: "12/3/2018"
+title: "Pima Native Americans and Diabetes"
+subtitle: "Technical Appendix"
+author: "Amalia, Cassidy, Daniel, Maggie"
+date: "12/21/2018"
 output: pdf_document
 ---
-Daniel
-```{r}
+
+```{r, include=F}
+require(tidyverse)
 require(caret)
-require(magick)
-#install.packages("pROC")
 require(pROC)
-data <- read.delim("diabetes.txt", header = F, sep = ",")
+data <- read.delim("diabetes.txt", header = F, sep = ",") # assumes file is in the same directory
 names(data) <- c("PRG", "PLASMA", "BP", "THICK", "INSULIN", "BODY", "PEDIGREE", "AGE", "RESPONSE")
-data$RESPONSE2 <- ifelse(data$RESPONSE==1,"Y","N")
-data$RESPONSE2 <- as.factor(data$RESPONSE2)
+set.seed(1234)
+```
+
+## Introduction
+
+This is the technical appendix submitted for the Final Project portion of Statistics 320: Statistics Communications with Prof. Pamela Matheson. The assignment was to (A) predict the probability that individual females have diabetes, and (B) detect subsets of characteristics that are at higher risk of diabetes. This technical appendix details the code we used in our analysis and the creation of the data visualizations that comprised our presentation. 
+- Presentation slides can be found [here](rpubs.com/danielnjoo/s320).
+- The Shiny app can be found [here](danielnjoo.shinyapps.io/Pima_Eval_Model/)
+- The 3 page report can be found [here]().
+- The 1 page handout can be found [here]().
+
+## Data Visualization
+
+stuff
+stuff
+stuff
+
+
+## Model
+
+We used `caret`'s `gbm()` (gradient boost model) function to initially create a classifier on all the variables available. Training options consisted of 5-fold cross-validation with a 0.75 train-test split. Given the function's random nature, a seed was set in order to ensure reproducibility.
+
+```{r, include=F}
+data$RESPONSE2 <- factor(ifelse(data$RESPONSE==1,"Y","N"), levels=c("N","Y"))
 outcomeName <- 'RESPONSE2'
 predictorsNames <- names(data)[1:8]
 splitIndex <- createDataPartition(data[,outcomeName], p = .75, list = FALSE, times = 1)
@@ -25,11 +47,32 @@ objModel <- train(trainDF[,predictorsNames], trainDF[,outcomeName],
                   trControl=objControl,  
                   metric = "ROC",
                   preProc = c("center", "scale"))
+```
+
+A summary of the model object gives us the relative influences of the variables.
+
+```{r}
 summary(objModel)
+```
+
+We make predictions on the text set, plot an AUC curve, print the AUC, and the some overall metrics:
+
+```{r}
 predictions <- predict(object=objModel, testDF[,predictorsNames], type='prob')
 auc <- roc(testDF$RESPONSE2, predictions[,2])
-plot(auc)
+plot(auc); auc$auc
+pred<-factor(ifelse(predictions$Y>0.50,"Y","N"),levels=c("N","Y"))
+conf<-confusionMatrix(pred,testDF$RESPONSE2) 
+conf$overall; conf$byClass
+```
 
+We find that the full variable model has an AUC of 85%, overall accuracy of 79%, sensitivity of 85%, and specificity of 69%. This full variable model is implemented in the Shiny app linked in the Introduction section.
+
+### Two variable model
+
+Recognizing that some of the variables such as Blood Plasma and Insulin would not be immediately available to epidemiologists on the ground surveying US Pima Native Americans, we felt the need to produce a reduced model as well. We ended up producing a 2 variable model consisting of BMI and Age, that still has a decent sensitivity (80%), but suffers from a low specificity (51%). Overall model accuracy was 70%.  
+
+```{r, include=F}
 predictorsNames2 <- predictorsNames[c(6,8)]
 objModel2 <- train(trainDF[,predictorsNames2], trainDF[,outcomeName], 
                   method='gbm', 
@@ -38,9 +81,14 @@ objModel2 <- train(trainDF[,predictorsNames2], trainDF[,outcomeName],
                   preProc = c("center", "scale"))
 summary(objModel2)
 predictions2 <- predict(object=objModel2, testDF[,predictorsNames], type='prob')
-auc2 <- roc(testDF$RESPONSE2, predictions2[,2])
-plot(auc2)
+pred2<-factor(ifelse(predictions2$Y>0.50,"Y","N"),levels=c("N","Y"))
+conf2<-confusionMatrix(pred2,testDF$RESPONSE2) 
 ```
+
+```{r}
+conf2$overall; conf2$byClass
+```
+
 
 Cassidy
 ```{r}
