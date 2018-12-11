@@ -1,4 +1,4 @@
-Diabetes Risk Among US Pima Native Americans
+Diabetes In US Pima Native Americans and What We Can Do About It
 ========================================================
 author: Amalia, Cassidy, Daniel, Maggie
 date: STAT320
@@ -34,7 +34,7 @@ Background
 - 2 Types:
   + Type I: more genetic, lack of insulin production
   + Type II: more environmental, poor insulin regulation
-- 1965 study: US Pima Indians highest prevalence of Type II ever recorded
+- 1965 study: Pima  highest prevalence of Type II ever recorded
 
 ```{r}
 #Notes: Type II diabetes occurs when the body does not use insulin properly, increasing blood-sugar.
@@ -140,7 +140,6 @@ left: 60%
 
 ***
 
-
 ========================================================
 transition: none
 
@@ -148,34 +147,71 @@ transition: none
 d2<-filter(d, response==1)%>%mutate(Diabetes=factor(ifelse(response==1, "Positive", NA)))#positive
 d3<-filter(d, response==0)%>%mutate(Diabetes=factor(ifelse(response==0, "Negative", NA)))#negative
 
-# p0 <- ggplot(data.frame()) + geom_blank() + theme(panel.background=element_blank())
+# p1 <- ggplot(d2,aes(x=plasma)) + 
+#   geom_histogram(data=d2,aes(x=plasma, fill=Diabetes), alpha = 0.7) +
+#   geom_histogram(data=d3,aes(x=plasma, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Plasma Glucose Concentration", y="Number of People", title="Plasma") +  theme(title = element_text(size=16), legend.position = "none") +
+#   scale_fill_manual(values=c("#619CFF", "#F8766D")) 
 
 p1 <- ggplot(d2,aes(x=plasma)) + 
-  geom_histogram(data=d2,aes(x=plasma, fill=Diabetes), alpha = 0.7) +
-  geom_histogram(data=d3,aes(x=plasma, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Plasma Glucose Concentration", y="Number of People", title="Plasma") +  theme(title = element_text(size=16), legend.position = "none") +
-  scale_fill_manual(values=c("#619CFF", "#F8766D")) 
-# + scale_x_continuous(limits=c(50,200))
+  geom_histogram(data=d2,aes(x=plasma, fill=Diabetes), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=plasma, fill=Diabetes), alpha = 0.7) + 
+  theme(plot.title=element_text(hjust=0.5)) + 
+  labs(x="Plasma Glucose Concentration", y="Number of People", title="Plasma") +  
+  theme(title = element_text(size=16), legend.position = "bottom") +
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) + 
+  geom_vline(aes(xintercept =mean(d2$plasma), col="#619CFF"), show.legend=F)+ 
+  geom_vline(aes(xintercept =mean(d3$plasma), col="#F8766D"), show.legend=F) + 
+  scale_x_continuous(limits=c(50,200))
+
+# p2 <- ggplot(d2,aes(x=age)) + 
+#   geom_histogram(data=d2,aes(x=age, fill=Diabetes), alpha = 0.7)+
+#   geom_histogram(data=d3,aes(x=age, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Age (In Years)", y="Number of People", title="Age")+  theme(title = element_text(size=16), legend.position="none")+
+#   scale_fill_manual(values=c("#619CFF", "#F8766D")) + geom_vline(xintercept = mean(d2$age), aes(col="#F8766D"))
 
 p2 <- ggplot(d2,aes(x=age)) + 
   geom_histogram(data=d2,aes(x=age, fill=Diabetes), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=age, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Age (In Years)", y="Number of People", title="Age")+  theme(title = element_text(size=16), legend.position="none")+
-  scale_fill_manual(values=c("#619CFF", "#F8766D")) 
-#+ scale_x_continuous(limits=c(0,1.5))
+  geom_histogram(data=d3,aes(x=age, fill=Diabetes), alpha = 0.7) + 
+  theme(plot.title=element_text(hjust=0.5)) + 
+  labs(x="Age (In Years)", y="Number of People", title="Age")+  
+  theme(title = element_text(size=16), legend.position="bottom")+
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) + 
+  geom_vline(aes(xintercept =mean(d2$age), col="#619CFF"), show.legend=F)  + 
+  geom_vline(aes(xintercept =mean(d3$age), col="#F8766D"), show.legend=F)  + 
+  scale_x_continuous(limits=c(20,70))
+
+# p3 <- ggplot(d2,aes(x=pedigree)) + 
+#   geom_histogram(data=d2,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+
+#   geom_histogram(data=d3,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="Pedigree Function Value", y="Number of People", title="Pedigree")+  theme(title = element_text(size=16), legend.position = "none")+
+#   scale_fill_manual(values=c("#619CFF", "#F8766D")) 
 
 p3 <- ggplot(d2,aes(x=pedigree)) + 
   geom_histogram(data=d2,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="Pedigree Function Value", y="Number of People", title="Pedigree")+  theme(title = element_text(size=16), legend.position = "none")+
-  scale_fill_manual(values=c("#619CFF", "#F8766D")) 
-# + scale_x_continuous(limits=c(0,1.5))
+  geom_histogram(data=d3,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+ 
+  theme(plot.title=element_text(hjust=0.5)) + 
+  labs(x="Pedigree Function Value", y="Number of People", title="Pedigree")+  
+  theme(title = element_text(size=16), legend.position = "bottom")+
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) + 
+  scale_x_continuous(limits=c(0,1.5)) + 
+  geom_vline(aes(xintercept =mean(d2$pedigree), col="#619CFF"), show.legend=F)  + 
+  geom_vline(aes(xintercept=mean(d3$pedigree), col="#F8766D"), show.legend=F)
+
+# p4 <- ggplot(d2,aes(x=body)) + 
+#   geom_histogram(data=d2,aes(x=body, fill=Diabetes), alpha = 0.7)+
+#   geom_histogram(data=d3,aes(x=body, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="BMI", y="Number of People", title="Body Mass Index")+  theme(title = element_text(size=16), legend.position = "bottom") +
+#   scale_fill_manual(values=c("#619CFF", "#F8766D")) 
 
 p4 <- ggplot(d2,aes(x=body)) + 
-  geom_histogram(data=d2,aes(x=body, fill=Diabetes), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=body, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="BMI", y="Number of People", title="Body Mass Index")+  theme(title = element_text(size=16), legend.position = "bottom") +
-  scale_fill_manual(values=c("#619CFF", "#F8766D")) 
-# + scale_x_continuous(limits=c(15,60))
+  geom_histogram(data=d2,aes(x=body, fill=Diabetes), alpha = 0.7) +
+  geom_histogram(data=d3,aes(x=body, fill=Diabetes), alpha = 0.7) + 
+  theme(plot.title=element_text(hjust=0.5)) + 
+  labs(x="BMI", y="Number of People", title="Body Mass Index") +
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) +
+  geom_vline(aes(xintercept =mean(d2$body), col="#619CFF"), show.legend=F) +
+  geom_vline(aes(xintercept=mean(d3$body), col="#F8766D"), show.legend=F) + 
+  theme(title = element_text(size=16), legend.position = "bottom")
 
 #grid.arrange(p1, p0, p0, p0, nrow = 2)
-ggarrange(p1, p2, p3, p4, ncol=2, nrow=2, common.legend = TRUE, legend="bottom")
+ggarrange(p1, p2, p3, p4, ncol=2, nrow=2, common.legend = T)
 ```
 
 Model
@@ -222,7 +258,6 @@ Recommendations
 
 Limitations
 ========================================================
-
-- Sample population (represents American Pima Indians)
+- Sample population (represents US Pima Native Americans)
 - Age (21+)
 - Gender (Women only)
