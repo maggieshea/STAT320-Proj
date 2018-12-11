@@ -31,8 +31,9 @@ Background
 ========================================================
 
 - Insulin: key hormone in regulating glucose levels
-- Type I: more genetic, lack of insulin production
-- Type II: more environmental, poor insulin regulation
+- 2 Types:
+  + Type I: more genetic, lack of insulin production
+  + Type II: more environmental, poor insulin regulation
 - 1965 study: US Pima Indians highest prevalence of Type II ever recorded
 
 ```{r}
@@ -53,9 +54,9 @@ df1 <- data.frame("Prevalence" = c(34.2,40.8,9.2,8.3), "Gender" = c("Men", "Wome
 df1 %>% 
 ggplot(aes(x=Group,y=Prevalence,fill=factor(Gender))) +
   geom_bar(stat="identity",position="dodge") +
-  scale_fill_discrete(name="Gender") +
+  scale_fill_manual(name="Gender",values=c("#619CFF", "#F8766D")) +
   xlab("Group") + ylab("Percent with T2 Diabetes") + ggtitle("Type 2 Diabetes Rates") +
-  theme(title = element_text(size=42), axis.title.x = element_text(size=32), axis.title.y = element_text(size=32), legend.text = element_text(size=32), axis.text.x = element_text(size=20), axis.text.y = element_text(size=20))
+  theme(title = element_text(size=42), axis.title.x = element_text(size=32), axis.title.y = element_text(size=32), legend.text = element_text(size=32), axis.text.x = element_text(size=20), axis.text.y = element_text(size=20))  
 ```
 
 
@@ -100,11 +101,13 @@ left: 60%
 
 df <- data.frame("var"=c("PLASMA","BODY","AGE","PEDIGREE","PRG","INSULIN","BP","THICK"), "val" =c(42,21.7,14.5,9.7,6.4,2.5,1.8,1.4)) 
 df$var <- factor(df$var, levels(df$var) <- rev(c("PLASMA","BODY","AGE","PEDIGREE","PRG","INSULIN","BP","THICK")) )
+df$col <- c(rep(1,4),rep(0,4))
 
 df %>% 
-  ggplot(aes(factor(var), val)) + geom_bar(stat='identity') +
+  ggplot(aes(factor(var), val, fill=factor(col))) + geom_bar(stat='identity') +
   labs(title="Relative Influence",y="",x="") +
-  theme(title=element_text(size=30), axis.text.y = element_text(size=16)) + coord_flip()
+  scale_fill_manual(values=c("grey", "#F8766D")) +
+  theme(title=element_text(size=30), axis.text.y = element_text(size=16), legend.position="none") + coord_flip()
 
 #               var   rel.inf
 # PLASMA     PLASMA 42.058613
@@ -145,23 +148,31 @@ transition: none
 d2<-filter(d, response==1)%>%mutate(Diabetes=factor(ifelse(response==1, "Positive", NA)))#positive
 d3<-filter(d, response==0)%>%mutate(Diabetes=factor(ifelse(response==0, "Negative", NA)))#negative
 
-p0 <- ggplot(data.frame()) + geom_blank() + theme(panel.background=element_blank())
+# p0 <- ggplot(data.frame()) + geom_blank() + theme(panel.background=element_blank())
 
 p1 <- ggplot(d2,aes(x=plasma)) + 
   geom_histogram(data=d2,aes(x=plasma, fill=Diabetes), alpha = 0.7) +
-  geom_histogram(data=d3,aes(x=plasma, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Plasma Glucose Concentration", y="Number of People", title="Plasma") +  theme(title = element_text(size=16), legend.position = "none")
+  geom_histogram(data=d3,aes(x=plasma, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Plasma Glucose Concentration", y="Number of People", title="Plasma") +  theme(title = element_text(size=16), legend.position = "none") +
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) 
+# + scale_x_continuous(limits=c(50,200))
 
 p2 <- ggplot(d2,aes(x=age)) + 
   geom_histogram(data=d2,aes(x=age, fill=Diabetes), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=age, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Age (In Years)", y="Number of People", title="Age")+  theme(title = element_text(size=16), legend.position="none")
+  geom_histogram(data=d3,aes(x=age, fill=Diabetes), alpha = 0.7) + theme(plot.title=element_text(hjust=0.5)) + labs(x="Age (In Years)", y="Number of People", title="Age")+  theme(title = element_text(size=16), legend.position="none")+
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) 
+#+ scale_x_continuous(limits=c(0,1.5))
 
 p3 <- ggplot(d2,aes(x=pedigree)) + 
   geom_histogram(data=d2,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="Pedigree Function Value", y="Number of People", title="Pedigree")+  theme(title = element_text(size=16), legend.position = "none")
+  geom_histogram(data=d3,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="Pedigree Function Value", y="Number of People", title="Pedigree")+  theme(title = element_text(size=16), legend.position = "none")+
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) 
+# + scale_x_continuous(limits=c(0,1.5))
 
 p4 <- ggplot(d2,aes(x=body)) + 
   geom_histogram(data=d2,aes(x=body, fill=Diabetes), alpha = 0.7)+
-  geom_histogram(data=d3,aes(x=body, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="BMI", y="Number of People", title="Body Mass Index")+  theme(title = element_text(size=16), legend.position = "bottom")
+  geom_histogram(data=d3,aes(x=body, fill=Diabetes), alpha = 0.7)+ theme(plot.title=element_text(hjust=0.5)) + labs(x="BMI", y="Number of People", title="Body Mass Index")+  theme(title = element_text(size=16), legend.position = "bottom") +
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) 
+# + scale_x_continuous(limits=c(15,60))
 
 #grid.arrange(p1, p0, p0, p0, nrow = 2)
 ggarrange(p1, p2, p3, p4, ncol=2, nrow=2, common.legend = TRUE, legend="bottom")
@@ -197,12 +208,17 @@ Takeaways
 
 Recommendations
 ========================================================
-- Minimize BMI and plasma-glucose
-  + Diet initiative
-  + Exercise initiative
-  + Community garden
+- Minimize BMI and plasma-glucose through healthy diet and exercise
 - Be aware of risk associated with age and genetic predisposition (pedigree)
-  + Monthly mobile clinic
+- Frequent testing, diet and exercise initiatives
+
+```{r, echo=FALSE}
+#community garden, mobile clinic, community-led exercise classes
+```
+
+
+- Factors related to Diabetes status: PRG, Plasma, Blood Pressure, BMI, Pedigree, Age, Insulin. 
+- Fewer had a large impact on likelihood of developing diabetes: BMI, Age, and Plasma.
 
 Limitations
 ========================================================
