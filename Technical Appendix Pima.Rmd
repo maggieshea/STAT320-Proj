@@ -23,12 +23,58 @@ This is the technical appendix submitted for the Final Project portion of Statis
 - The 3 page report can be found [here]().
 - The 1 page handout can be found [here]().
 
-## Data Visualization
+## Preliminary Analysis
 
-stuff
-stuff
-stuff
+To begin, we looked at the response variable to confirm how many cases of type 2 diabetes there were in this sample. Our findgings matched the handout: 268 out of 768 women in this sample were positive for type two diabetes. We then constructed two side by side histograms based on outside data in order to contextualize these findings. 
 
+```{r}
+pima<-data %>% clean_names()
+pima$response<-as.factor(pima$response)
+
+
+table(pima$response)
+df1 <- data.frame("Prevalence" = c(34.2,40.8,9.2,8.3), "Gender" = c("Men", "Women", "Men", "Women"), "Group" = c("Pima","Pima","All","All"))
+
+df1 %>% 
+ggplot(aes(x=Group,y=Prevalence,fill=factor(Gender))) +
+  geom_bar(stat="identity",position="dodge") +
+  scale_fill_manual(name="Gender",values=c("#619CFF", "#F8766D")) +
+  xlab("Group") + ylab("Percent with T2 Diabetes") + ggtitle("Type 2 Diabetes Rates") +
+  theme(title = element_text(size=42), axis.title.x = element_text(size=32), axis.title.y = element_text(size=32), legend.text = element_text(size=32), axis.text.x = element_text(size=20), axis.text.y = element_text(size=20))  
+```
+
+This graph revealed that our sample was relatively consistent with outside estimates of diabetes prevalence among Pima Native American women. [^1] Additionally, we were able to visualize how much higher the rate of type two diabetes was among Pima Native American people relative to the general population of the US as a whole.  
+
+Next, we investigated each variable separately by looking at their individual distributions for the women in our sample with diabetes (response=1) and those without (response=0).
+
+```{r}
+
+# PRG
+pima %>% ggplot(aes(x=prg, group = response, color = response)) + geom_density() + ggtitle("PRG")
+
+# plasma
+pima %>% ggplot(aes(x=plasma, group = response, color = response)) + geom_density() + ggtitle("Plasma")
+
+# BP
+pima %>% ggplot(aes(x=bp, group = response, color = response)) + geom_density() + ggtitle("BP")
+
+# thick
+pima %>% ggplot(aes(x=thick, group = response, color = response)) + geom_density() + ggtitle("Thick")
+
+# insulin
+pima %>% ggplot(aes(x=insulin, group = response, color = response)) + geom_density() + ggtitle("Insulin")
+
+# body
+pima %>% ggplot(aes(x=body, group = response, color = response)) + geom_density() + ggtitle("BMI")
+
+# pedigree
+pima %>% ggplot(aes(x=pedigree, group = response, color = response)) + geom_density() + ggtitle("Pedigree")
+
+# age
+pima %>% ggplot(aes(x=age, group = response, color = response)) + geom_density() + ggtitle("Age")
+```
+
+We noticed differences in distributions among all variables, but some more than others. In the next section we use models to investigate these variables further.
 
 ## Model
 
@@ -180,7 +226,10 @@ temp3 %>%
 ```
 
 
-Maggie Work
+## Data Visualization
+
+In order to visualize the variables we deemed important, we split the sample into two groups: women who were positive for type 2 diabetes and women who were negative. Then, we constructed overlapping histograms for each of the four variables we were interested in so that we could see how the distributions for each variable differed between groups. This is similar to what we did in the preliminary analysis section; the only difference (in addition to narrowing down the number of variables we're presenting) is we have made the graphs more visually appealing and easy to understand for someone unfamiliar with the dataset. These are the visuals we used in our presentation.
+
 ```{r}
 #install.packages("rgr")
 require(rgr)
@@ -188,10 +237,7 @@ require(lattice)
 require(janitor)
 require(ggpubr)
 
-d1<-pima %>% clean_names()
-bwplot(response~plasma, data=d1)
-bwplot(response~age, data=d1)
-bwplot(response~body, data=d1)
+d1<-data %>% clean_names()
 
 d2<-filter(d1, response==1)%>%mutate(Diabetes=factor(ifelse(response==1, "Positive", NA)))#positive
 d3<-filter(d1, response==0)%>%mutate(Diabetes=factor(ifelse(response==0, "Negative", NA)))#negative
@@ -217,4 +263,7 @@ p4 <- ggplot(d2,aes(x=body)) +
 ggarrange(p1, p2, p3, p4, ncol=2, nrow=2, common.legend = TRUE, legend="bottom")
 ```
 
+As you can see, women in our sample who tested positive for type 2 diabetes trended higher for each variable in question (plasma, age, pedigree, BMI). This suggests that a high plasma glucose concentration, greater age, a high pedigree value, and a high BMI may all be risk factors for Type 2 diabetes.
 
+[^1]: "Effects of Traditional and Western Environments on Prevalence of Type 2 Diabetes in Pima Indians in Mexico and the U.S." 2006. Leslie Schulz, Peter Bennett, Eric Ravussin, Judith Kidd, Kenneth Kidd, Julian Esparza and Mauro E. Valencia.
+http://care.diabetesjournals.org/content/29/8/1866
