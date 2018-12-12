@@ -15,7 +15,7 @@ transition-speed: fast
 <p style="font-size:40px">and What We Can Do About It</p>
 
 
-<img src="logo_transparent.png"/ align="right" style="height:500px;         
+<img src="Pictures/logo_transparent.png"/ align="right" style="height:500px;         
     background: none;
     border: none; 
     box-shadow: none;">
@@ -44,7 +44,7 @@ Overview
 Background
 ========================================================
 
-<img src="background.jpg" class="center" style="height:600px">
+<img src="Pictures/background.jpg" class="center" style="height:600px">
 
 ```{r}
 #Notes: Type II diabetes occurs when the body does not use insulin properly, increasing blood-sugar.
@@ -154,16 +154,15 @@ p4 <- ggplot(d2,aes(x=body)) +
 ggarrange(p1, p2, p3, p4, ncol=2, nrow=2, common.legend = T, legend= "bottom")
 ```
 
-
-
-
 Models
 ========================================================
 type: section
 
+- Full Model
+- Field Model
+- Metrics
 
-
-
+Full Model
 ========================================================
 
 ```{r, fig.height=10, fig.width=14}
@@ -188,28 +187,49 @@ df %>%
 # THICK       THICK  1.408122
 ```
 
+
+But...
+========================================================
+<img src="http://www.cnyhealth.com/wordpress/wp-content/uploads/2017/07/Blood-ThinkstockPhotos-477913532-715x400.png"/>
+
+Also...
 ========================================================
 <img src="https://i.pinimg.com/236x/67/78/ee/6778ee5537fb4d2c52a6ff6359f8047c--tennis-racket-mountain-range.jpg" style="height:500px" align="middle">
+
+So...
+========================================================
+```{r, fig.height=10, fig.width=14}
+df <- data.frame("var"=c("Blood","BMI","Age","Family","Preg","Insulin","BP","Triceps"), "val" =c(42,21.7,14.5,9.7,6.4,2.5,1.8,1.4)) 
+df$var <- factor(df$var, levels(df$var) <- rev(c("Blood","BMI","Age","Family","Preg","Insulin","BP","Triceps")) )
+df$col <- c(0,rep(1,2),rep(0,5))
+
+df %>% 
+  ggplot(aes(factor(var), val, fill=factor(col))) + geom_bar(stat='identity') +
+  labs(title="Relative Influence",y="",x="") +
+  scale_fill_manual(values=c("grey", "#F8766D")) +
+  theme(title=element_text(size=30), axis.text.y = element_text(size=16), legend.position="none") + coord_flip()
+
+```
+
+Field Model
+========================================================
+![table](Pictures/table.png)
 
 Metrics
 ========================================================
 - Full Model:
-  + 85% true positive rate
-  + 69% true negative rate
+  + 83% positive predictive value
+  + 71% negative predictive value
 
   
 - Field Model:
-  + 80% true positive rate
-  + 50% true negative rate
+  + 75% positive predictive value
+  + 58% negative predictive value
+
 
 ```{r}
 # 79% vs 70% overall accuracy
 ```
-
-
-Field Model
-========================================================
-![table](table.png)
 
 Initiatives
 ========================================================
@@ -217,19 +237,19 @@ type: section
 
 Diet
 ========================================================
-<img src="diet.jpg" class="center">
+<img src="Pictures/diet.jpg" class="center">
 
 Exercise
 ========================================================
-<img src="drums.png" class="center">
+<img src="Pictures/drums.png" class="center">
 
 Community Garden 
 ========================================================
-<img src="garden.jpg" class="center">
+<img src="Pictures/garden.jpg" class="center">
 
 Mobile Clinic
 ========================================================
-<img src="ambulance.png" class="center">
+<img src="Pictures/ambulance.png" class="center">
 
 Limitations
 ========================================================
@@ -237,15 +257,15 @@ type: section
 
 Generalizability 
 ========================================================
-<img src="sample.jpg" class="center">
+<img src="Pictures/sample.jpg" class="center">
 
 U21
 ========================================================
-<img src="age.jpg" class="center">
+<img src="Pictures/age.jpg" class="center">
 
 Gender
 ========================================================
-<img src="female.jpg" class="center">
+<img src="Pictures/female.jpg" class="center">
 
 
 Questions
