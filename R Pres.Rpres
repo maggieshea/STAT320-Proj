@@ -1,11 +1,24 @@
-Diabetes In US Pima Native Americans and What We Can Do About It
+<style>
+.center {
+    align: center;
+    height: 600px;
+}
+</style>
+
 ========================================================
-author: Amalia, Cassidy, Daniel, Maggie
-date: STAT320
 autosize: true
 incremental: true
 transition: rotate
 transition-speed: fast
+
+<p style="font-size:55px" style="font-weight:bold">Diabetes In US Pima Native Americans</p>
+<p style="font-size:40px">and What We Can Do About It</p>
+
+
+<img src="logo_transparent.png"/ align="right" style="height:500px;         
+    background: none;
+    border: none; 
+    box-shadow: none;">
 
 ```{r setup and load, echo=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -23,18 +36,15 @@ Overview
 
 - Background
 - Data
-- Model
-- Recommendations
+- Models
+- Initiatives
+- Limitations
 
 
 Background
 ========================================================
 
-- Insulin: key hormone in regulating glucose levels
-- 2 Types:
-  + Type I: more genetic, lack of insulin production
-  + Type II: more environmental, poor insulin regulation
-- 1965 study: Pima  highest prevalence of Type II ever recorded
+<img src="background.jpg" class="center" style="height:600px">
 
 ```{r}
 #Notes: Type II diabetes occurs when the body does not use insulin properly, increasing blood-sugar.
@@ -44,9 +54,18 @@ Background
 
 Data
 ========================================================
-incremental: false
+type: section
 
-- 768 Pima women, 21+, 35% positive for Type II Diabetes
+```{r}
+# mention n=768, females, >21 age
+# source: 1965 study
+# US Pimas have highest rate of T2 diabetes
+# 35% in this dataset
+```
+
+
+Data
+========================================================
 
 ```{r, fig.height=8, fig.width=14}
 df1 <- data.frame("Prevalence" = c(34.2,40.8,9.2,8.3), "Gender" = c("Men", "Women", "Men", "Women"), "Group" = c("Pima","Pima","All","All"))
@@ -60,90 +79,11 @@ ggplot(aes(x=Group,y=Prevalence,fill=factor(Gender))) +
 ```
 
 
-Data: variables
+
+Visualizations
 ========================================================
-transition: none
-left: 60%
 
-- PLASMA: blood plasma
-- BODY: body mass index (BMI)
-- AGE: age of woman
-- PEDIGREE: function relating to family history of T2 diabetes
-- PRG: number of pregnancies
-- INSULIN: saliva insulin levels
-- BP: blood pressure
-- THICK: triceps fold skin thickness
-- RESPONSE: whether or not they had diabetes
-
-***
-
-Data: the most important variables
-========================================================
-transition: none
-incremental: false
-left: 60%
-
-- **PLASMA: blood plasma**
-- **BODY: body mass index (BMI)**
-- **AGE: age of woman**
-- **PEDIGREE: function relating to family history of T2 diabetes**
-- PRG: number of pregnancies
-- INSULIN: saliva insulin levels
-- BP: blood pressure
-- THICK: triceps fold skin thickness
-- RESPONSE: whether or not they had diabetes
-
-
-***
-
-```{r, fig.height=10}
-
-
-df <- data.frame("var"=c("PLASMA","BODY","AGE","PEDIGREE","PRG","INSULIN","BP","THICK"), "val" =c(42,21.7,14.5,9.7,6.4,2.5,1.8,1.4)) 
-df$var <- factor(df$var, levels(df$var) <- rev(c("PLASMA","BODY","AGE","PEDIGREE","PRG","INSULIN","BP","THICK")) )
-df$col <- c(rep(1,4),rep(0,4))
-
-df %>% 
-  ggplot(aes(factor(var), val, fill=factor(col))) + geom_bar(stat='identity') +
-  labs(title="Relative Influence",y="",x="") +
-  scale_fill_manual(values=c("grey", "#F8766D")) +
-  theme(title=element_text(size=30), axis.text.y = element_text(size=16), legend.position="none") + coord_flip()
-
-#               var   rel.inf
-# PLASMA     PLASMA 42.058613
-# BODY         BODY 21.627825
-# AGE           AGE 14.526647
-# PEDIGREE PEDIGREE  9.729920
-# PRG           PRG  6.379842
-# INSULIN   INSULIN  2.493085
-# BP             BP  1.775946
-# THICK       THICK  1.408122
-```
-
-
-Data: the easiest variables to measure
-========================================================
-transition: none
-incremental: false
-left: 60%
-
-
-- PLASMA: blood plasma
-- **BODY: body mass index (BMI)**
-- **AGE: age of woman**
-- PEDIGREE: function relating to family history of T2 diabetes
-- PRG: number of pregnancies
-- INSULIN: saliva insulin levels
-- BP: blood pressure
-- THICK: triceps fold skin thickness
-- RESPONSE: whether or not they had diabetes
-
-***
-
-========================================================
-transition: none
-
-```{r, fig.height=9, fig.width=9, fig.align="center"}
+```{r, fig.height=9, fig.width=14}
 d2<-filter(d, response==1)%>%mutate(Diabetes=factor(ifelse(response==1, "Positive", NA)))#positive
 d3<-filter(d, response==0)%>%mutate(Diabetes=factor(ifelse(response==0, "Negative", NA)))#negative
 
@@ -211,59 +151,104 @@ p4 <- ggplot(d2,aes(x=body)) +
   theme(title = element_text(size=16), legend.position = "bottom")
 
 #grid.arrange(p1, p0, p0, p0, nrow = 2)
-ggarrange(p1, p2, p3, p4, ncol=2, nrow=2, common.legend = T)
+ggarrange(p1, p2, p3, p4, ncol=2, nrow=2, common.legend = T, legend= "bottom")
 ```
 
-Model
+
+
+
+Models
+========================================================
+type: section
+
+
+
+
 ========================================================
 
-2 models
+```{r, fig.height=10, fig.width=14}
+df <- data.frame("var"=c("Blood","BMI","Age","Family","Preg","Insulin","BP","Triceps"), "val" =c(42,21.7,14.5,9.7,6.4,2.5,1.8,1.4)) 
+df$var <- factor(df$var, levels(df$var) <- rev(c("Blood","BMI","Age","Family","Preg","Insulin","BP","Triceps")) )
+df$col <- c(rep(1,4),rep(0,4))
 
-- Model 1: using all 8 variables
-  + 79% overall accuracy
-  + 85% probability of detecting diabetes in those who had it 
-  + 69% probability of not detecting diabetes who did not have it
+df %>% 
+  ggplot(aes(factor(var), val, fill=factor(col))) + geom_bar(stat='identity') +
+  labs(title="Relative Influence",y="",x="") +
+  scale_fill_manual(values=c("grey", "#F8766D")) +
+  theme(title=element_text(size=30), axis.text.y = element_text(size=16), legend.position="none") + coord_flip()
+
+#               var   rel.inf
+# PLASMA     PLASMA 42.058613
+# BODY         BODY 21.627825
+# AGE           AGE 14.526647
+# PEDIGREE PEDIGREE  9.729920
+# PRG           PRG  6.379842
+# INSULIN   INSULIN  2.493085
+# BP             BP  1.775946
+# THICK       THICK  1.408122
+```
+
+========================================================
+<img src="https://i.pinimg.com/236x/67/78/ee/6778ee5537fb4d2c52a6ff6359f8047c--tennis-racket-mountain-range.jpg" style="height:500px" align="middle">
+
+Metrics
+========================================================
+- Full Model:
+  + 85% true positive rate
+  + 69% true negative rate
+
   
-- Model 2: using only BMI and Age
-  + 70% overall accuracy
-  + 80% probability of detecting diabetes in those who had it 
-  + 50% probability of not detecting diabetes who did not have it
+- Field Model:
+  + 80% true positive rate
+  + 50% true negative rate
 
-```{r, echo=F}
-# AUC is too technical? 85% though
-```
-
-Takeaways
-========================================================
-
-- If lab data is available, i.e. plasma, use the full model
-  + Fill in missing data using average values.
-  + Live Shiny app [here](TBD.com) for getting live predictions
-- In the field, BMI/Age does a pretty good job
-  + But decent probability of a false negative
-
-Recommendations
-========================================================
-- Minimize BMI and plasma-glucose through healthy diet and exercise
-- Be aware of risk associated with age and genetic predisposition (pedigree)
-- Frequent testing, diet and exercise initiatives
-
-```{r, echo=FALSE}
-#community garden, mobile clinic, community-led exercise classes
+```{r}
+# 79% vs 70% overall accuracy
 ```
 
 
-- Factors related to Diabetes status: PRG, Plasma, Blood Pressure, BMI, Pedigree, Age, Insulin. 
-- Fewer had a large impact on likelihood of developing diabetes: BMI, Age, and Plasma.
+Field Model
+========================================================
+![table](table.png)
+
+Initiatives
+========================================================
+type: section
+
+Diet
+========================================================
+<img src="diet.jpg" class="center">
+
+Exercise
+========================================================
+<img src="drums.png" class="center">
+
+Community Garden 
+========================================================
+<img src="garden.jpg" class="center">
+
+Mobile Clinic
+========================================================
+<img src="ambulance.png" class="center">
 
 Limitations
 ========================================================
-- Sample population (represents US Pima Native Americans)
-- Age (21+)
-- Gender (Women only)
+type: section
 
-
-Thank You!
+Generalizability 
 ========================================================
+<img src="sample.jpg" class="center">
 
-**Questions?**
+U21
+========================================================
+<img src="age.jpg" class="center">
+
+Gender
+========================================================
+<img src="female.jpg" class="center">
+
+
+Questions
+========================================================
+type: section
+
