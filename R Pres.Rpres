@@ -166,8 +166,8 @@ Full Model
 ========================================================
 
 ```{r, fig.height=10, fig.width=14}
-df <- data.frame("var"=c("Blood","BMI","Age","Family","Preg","Insulin","BP","Triceps"), "val" =c(42,21.7,14.5,9.7,6.4,2.5,1.8,1.4)) 
-df$var <- factor(df$var, levels(df$var) <- rev(c("Blood","BMI","Age","Family","Preg","Insulin","BP","Triceps")) )
+df <- data.frame("var"=c("Plasma","BMI","Age","Family","Preg","Insulin","BP","Triceps"), "val" =c(42,21.7,14.5,9.7,6.4,2.5,1.8,1.4)) 
+df$var <- factor(df$var, levels(df$var) <- rev(c("Plasma","BMI","Age","Family","Preg","Insulin","BP","Triceps")) )
 df$col <- c(rep(1,4),rep(0,4))
 
 df %>% 
@@ -190,7 +190,7 @@ df %>%
 
 But...
 ========================================================
-<img src="http://www.cnyhealth.com/wordpress/wp-content/uploads/2017/07/Blood-ThinkstockPhotos-477913532-715x400.png"/>
+<img src="Pictures/blood.png">
 
 Also...
 ========================================================
@@ -199,8 +199,8 @@ Also...
 So...
 ========================================================
 ```{r, fig.height=10, fig.width=14}
-df <- data.frame("var"=c("Blood","BMI","Age","Family","Preg","Insulin","BP","Triceps"), "val" =c(42,21.7,14.5,9.7,6.4,2.5,1.8,1.4)) 
-df$var <- factor(df$var, levels(df$var) <- rev(c("Blood","BMI","Age","Family","Preg","Insulin","BP","Triceps")) )
+df <- data.frame("var"=c("Plasma","BMI","Age","Family","Preg","Insulin","BP","Triceps"), "val" =c(42,21.7,14.5,9.7,6.4,2.5,1.8,1.4)) 
+df$var <- factor(df$var, levels(df$var) <- rev(c("Plasma","BMI","Age","Family","Preg","Insulin","BP","Triceps")) )
 df$col <- c(0,rep(1,2),rep(0,5))
 
 df %>% 
@@ -217,12 +217,16 @@ Field Model
 
 Metrics
 ========================================================
+incremental: false
+
 - Full Model:
+  + 79% overall accuracy
   + 83% positive predictive value
   + 71% negative predictive value
 
   
 - Field Model:
+  + 70% overall accuracy
   + 75% positive predictive value
   + 58% negative predictive value
 
@@ -259,7 +263,7 @@ Generalizability
 ========================================================
 <img src="Pictures/sample.jpg" class="center">
 
-U21
+Age
 ========================================================
 <img src="Pictures/age.jpg" class="center">
 

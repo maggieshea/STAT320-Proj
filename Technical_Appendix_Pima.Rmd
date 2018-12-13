@@ -1,0 +1,254 @@
+---
+title: "Pima Native Americans and Diabetes"
+subtitle: "Technical Appendix"
+author: "Amalia, Cassidy, Daniel, Maggie"
+date: "12/21/2018"
+output: pdf_document
+toc: true
+---
+
+```{r include=F}
+knitr::opts_chunk$set(cache=T)
+```
+
+
+# Introduction
+
+This is the technical appendix submitted for the Final Project portion of Statistics 320: Statistics Communications with Prof. Pamela Matheson. The assignment was to 
+
+(A) predict the probability that individual females have diabetes, and 
+
+(B) detect subsets of characteristics that are at higher risk of diabetes. 
+
+This technical appendix details the code we used in our analysis and the creation of the data visualizations that comprised our presentation. 
+
+- Presentation slides can be found [here](rpubs.com/danielnjoo/s320).
+- The Shiny app can be found [here](danielnjoo.shinyapps.io/Pima_Eval_Model/)
+- The 3 page report can be found [here]().
+- The 1 page handout can be found [here]().
+
+# Initial Loading
+
+```{r, message=F, warning=F}
+require(tidyverse)
+require(caret)
+require(pROC)
+require(ggpubr)
+require(gridExtra)
+require(xtable)
+data <- read.delim("diabetes.txt", header = F, sep = ",") # assumes file is in the same directory
+names(data) <- c("prg", "plasma", "bp", "thick", "insulin", "body", "pedigree", "age", "response")
+data$response <- factor(data$response)
+set.seed(1234)
+```
+
+# Preliminary Analysis
+
+To begin, we looked at the response variable to confirm how many cases of type 2 diabetes there were in this sample. Our findings matched the handout: 268 out of 768 women in this sample were positive for type two diabetes. We then constructed two side by side histograms based on outside data in order to contextualize these findings. 
+
+```{r}
+round(table(data$response)/nrow(data),3)
+```
+
+```{r, fig.height=4, fig.width=6}
+data.frame("Prevalence" = c(34.2,40.8,9.2,8.3), 
+                  "Gender" = c("Men", "Women", "Men", "Women"), 
+                  "Group" = c("Pima","Pima","All","All")) %>% 
+ggplot(aes(x=Group,y=Prevalence,fill=factor(Gender))) +
+  geom_bar(stat="identity",position="dodge") +
+  scale_fill_manual(name="Gender",values=c("#619CFF", "#F8766D")) +
+  xlab("Group") + ylab("Percent with T2 Diabetes") + ggtitle("Type 2 Diabetes Rates") 
+```
+
+This graph revealed that our sample was relatively consistent with other estimates of diabetes prevalence among Pima Native American women. [^1] Additionally, we were able to visualize how much higher the rate of type two diabetes was among Pima Native American people relative to the general population of the US as a whole.  
+
+## Distributions of individual variables
+
+Next, we investigated each variable separately by looking at their individual distributions for the women in our sample with diabetes (`response=1`) and those without (`response=0`).
+
+These plots were not used in the presentation, and are shown together (and without a legend) to save space. The red distributions refer to those who had diabetes.
+
+```{r}
+gg <- theme(legend.position="none", axis.title.y = element_blank(), 
+            axis.title.x = element_blank()) 
+
+p1 <- data %>% ggplot(aes(x=prg, group = response, color = response)) + geom_density() +
+  ggtitle("Pregnancies") + gg + scale_color_manual(values=c("#619CFF", "#F8766D"))
+p2 <- data %>% ggplot(aes(x=plasma, group = response, color = response)) + geom_density() +
+  ggtitle("Plasma") + gg + scale_color_manual(values=c("#619CFF", "#F8766D"))
+p3 <- data %>% ggplot(aes(x=bp, group = response, color = response)) + geom_density() +
+  ggtitle("BP") + gg + scale_color_manual(values=c("#619CFF", "#F8766D"))
+p4 <- data %>% ggplot(aes(x=thick, group = response, color = response)) + geom_density() +
+  ggtitle("Thick") + gg + scale_color_manual(values=c("#619CFF", "#F8766D"))
+p5 <- data %>% ggplot(aes(x=insulin, group = response, color = response)) + geom_density() +
+  ggtitle("Insulin") + gg + scale_color_manual(values=c("#619CFF", "#F8766D"))
+p6 <- data %>% ggplot(aes(x=body, group = response, color = response)) + geom_density() +
+  ggtitle("BMI") + gg + scale_color_manual(values=c("#619CFF", "#F8766D"))
+p7 <- data %>% ggplot(aes(x=pedigree, group = response, color = response)) + geom_density() +
+  ggtitle("Pedigree") + gg + scale_color_manual(values=c("#619CFF", "#F8766D"))
+p8 <- data %>% ggplot(aes(x=age, group = response, color = response)) + geom_density() +
+  ggtitle("Age") + gg + scale_color_manual(values=c("#619CFF", "#F8766D"))
+
+grid.arrange(grobs=list(p1,p2,p3,p4,p5,p6,p7,p8), nrow=2, common.legend=T, 
+             legend.position="bottom", top="Individual Variables")
+```
+
+
+## Presentation Visualizations
+
+In our presentation, we provided visualizations of the variables we later found to be the most influential in our model. To do this we split the sample into two groups: women who were positive for type 2 diabetes and women who were negative. Then, we constructed overlapping histograms for each of the four variables we were interested in so that we could see how the distributions for each variable differed between the two groups. Finally we added vertical lines color coded for the appropriate group representing the average value.
+
+This is similar to what we did in the preliminary analysis section; the only difference (in addition to narrowing down the number of variables we presented) is we made the graphs more visually appealing and easy to understand for someone unfamiliar with the dataset, i.e. we can see that in all four cases, the red line (diabetes positive) is further to the right than the blue line (diabetes negative).
+
+The code for this is below. Note x-axes were manually set, and cut off some outliers. This was done in order to make the difference in means appear as clearly as possible in the presentation.
+
+```{r, fig.height=9, fig.width=14, warning=F, message=F}
+d2<-filter(data, response==1)%>%mutate(Diabetes=factor(ifelse(response==1, 
+                                                              "Positive", NA)))
+d3<-filter(data, response==0)%>%mutate(Diabetes=factor(ifelse(response==0, 
+                                                              "Negative", NA)))
+
+p_1 <- ggplot(d2,aes(x=plasma)) + 
+  geom_histogram(data=d2,aes(x=plasma, fill=Diabetes), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=plasma, fill=Diabetes), alpha = 0.7) + 
+  theme(plot.title=element_text(hjust=0.5)) + 
+  labs(x="Plasma Glucose Concentration", y="Number of People", title="Plasma") +  
+  theme(title = element_text(size=16), legend.position = "bottom") +
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) + 
+  geom_vline(aes(xintercept =mean(d2$plasma), col="#619CFF"), show.legend=F)+ 
+  geom_vline(aes(xintercept =mean(d3$plasma), col="#F8766D"), show.legend=F) + 
+  scale_x_continuous(limits=c(50,200))
+
+p_2 <- ggplot(d2,aes(x=age)) + 
+  geom_histogram(data=d2,aes(x=age, fill=Diabetes), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=age, fill=Diabetes), alpha = 0.7) + 
+  theme(plot.title=element_text(hjust=0.5)) + 
+  labs(x="Age (In Years)", y="Number of People", title="Age")+  
+  theme(title = element_text(size=16), legend.position="bottom")+
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) + 
+  geom_vline(aes(xintercept =mean(d2$age), col="#619CFF"), show.legend=F)  + 
+  geom_vline(aes(xintercept =mean(d3$age), col="#F8766D"), show.legend=F)  + 
+  scale_x_continuous(limits=c(20,70))
+
+p_3 <- ggplot(d2,aes(x=pedigree)) + 
+  geom_histogram(data=d2,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+
+  geom_histogram(data=d3,aes(x=pedigree, fill=Diabetes), alpha = 0.7)+ 
+  theme(plot.title=element_text(hjust=0.5)) + 
+  labs(x="Pedigree Function Value", y="Number of People", title="Pedigree")+  
+  theme(title = element_text(size=16), legend.position = "bottom")+
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) + 
+  scale_x_continuous(limits=c(0,1.5)) + 
+  geom_vline(aes(xintercept =mean(d2$pedigree), col="#619CFF"), show.legend=F)  + 
+  geom_vline(aes(xintercept=mean(d3$pedigree), col="#F8766D"), show.legend=F)
+
+p_4 <- ggplot(d2,aes(x=body)) + 
+  geom_histogram(data=d2,aes(x=body, fill=Diabetes), alpha = 0.7) +
+  geom_histogram(data=d3,aes(x=body, fill=Diabetes), alpha = 0.7) + 
+  theme(plot.title=element_text(hjust=0.5)) + 
+  labs(x="BMI", y="Number of People", title="Body Mass Index") +
+  scale_fill_manual(values=c("#619CFF", "#F8766D")) +
+  geom_vline(aes(xintercept =mean(d2$body), col="#619CFF"), show.legend=F) +
+  geom_vline(aes(xintercept=mean(d3$body), col="#F8766D"), show.legend=F) + 
+  theme(title = element_text(size=16), legend.position = "bottom")
+
+ggarrange(p_1, p_2, p_3, p_4, ncol=2, nrow=2, common.legend = T, legend= "bottom")
+```
+
+# Model
+
+We used `caret`'s `gbm()` (gradient boost model) function to initially create a classifier on all the variables available. Training options consisted of 5-fold cross-validation with a 0.75 train-test split. Given the function's random nature, a seed was set in order to ensure reproducibility. In the presentation we referred to this as the Full Model.
+
+## Full Model
+
+```{r, include=F}
+data$response2 <- factor(ifelse(data$response==1,"Y","N"), levels=c("N","Y"))
+outcomeName <- 'response2'
+predictorsNames <- names(data)[1:8]
+splitIndex <- createDataPartition(data[,outcomeName], p = .75, list = FALSE, times = 1)
+trainDF <- data[ splitIndex,]
+testDF  <- data[-splitIndex,]
+objControl <- trainControl(method='cv', number=5, returnResamp='none', summaryFunction = twoClassSummary, classProbs = TRUE)
+objModel <- train(trainDF[,predictorsNames], trainDF[,outcomeName], 
+                  method='gbm', 
+                  trControl=objControl,  
+                  metric = "ROC",
+                  preProc = c("center", "scale"))
+```
+
+A summary of the model object gives us the relative influences of the variables.
+
+```{r}
+summary(objModel)
+```
+
+We make predictions on the text set, plot an AUC curve, print the AUC, and the some overall metrics:
+
+```{r, fig.height=3, fig.width=3}
+predictions <- predict(object=objModel, testDF[,predictorsNames], type='prob')
+auc <- roc(testDF$response2, predictions[,2])
+plot(auc); auc$auc
+pred<-factor(ifelse(predictions$Y>0.50,"Y","N"),levels=c("N","Y"))
+conf<-confusionMatrix(pred,testDF$response2) 
+conf$overall; conf$byClass
+```
+
+### Evaluating the Full Model
+
+We find that the full variable model has an AUC of 85%, overall accuracy of 79%, sensitivity of 85%, and specificity of 69%. Though the specificity is not as high as we might like, it is worth noting that the positive predictive value of 83% is not too far from 85%. 
+
+This full variable model is implemented in the Shiny app linked in the Introduction section. Though this satisfied Task (A), we recognized that Task (B) would be hard to complete with 8-variable model. For example, while an x-y plot is possible with two variables, and with three variables, a 3-D plot is possible, visualizing the interaction of more than three variables is impossible.
+
+Therefore we also built a two-variable model, which we referred to in the presentation as the Field Model. 
+
+## Field Model
+
+Although `Blood Plasma` was the most significant variable in the relative influence graph earlier, because it obtaining it requires lab work done on a blood sample taken after an 8 hour fast, we decided to choose the two easiest to obtain but influential variables. These were `BMI` and `Age`. This was done so that, in addition to making detecting subsets of at-risk Pima women possible, that the model could be used by epidemiologists on the ground.
+
+```{r, include=F}
+predictorsNames2 <- predictorsNames[c(6,8)]
+objModel2 <- train(trainDF[,predictorsNames2], trainDF[,outcomeName], 
+                  method='gbm', 
+                  trControl=objControl,  
+                  metric = "ROC",
+                  preProc = c("center", "scale"))
+summary(objModel2)
+predictions2 <- predict(object=objModel2, testDF[,predictorsNames], type='prob')
+pred2<-factor(ifelse(predictions2$Y>0.50,"Y","N"),levels=c("N","Y"))
+conf2<-confusionMatrix(pred2,testDF$response2) 
+```
+
+### Evaluating the Field Model
+
+```{r}
+conf2$overall; conf2$byClass
+```
+
+This model still has a decent sensitivity (80%), but suffers from a lower specificity (51%). Despite this low specificity, we stand by the usefulness of this model as its positive predictive power is relatively high - 75%. This means unlike the commonly asked brain teaser P(disease | test positive) of a highly reliable test, that 75% of individuals (in the test set) diagnosed with diabetes with  this model actually had diabetes. [^2]
+
+### Field Model Predictions On Fabricated Data
+
+This model was used later to make predictions on fabricated data consisting of all Age/BMI variations with both variables ranging from 20-60 in increments of 5. The results are shown below:
+
+```{r xtable, results='asis', comment=NA}
+temp <- data.frame(expand.grid(bmi=seq(20,60,5),age=seq(20,60,5)))
+temp2 <- data.frame(cbind(rep(0,81),rep(0,81),rep(0,81),rep(0,81),rep(0,81),temp[,1],rep(0,81),temp[,2],rep(0,81),rep(0,81)) )
+names(temp2) <- names(testDF)
+predictions3 <- predict(objModel2, temp2[,c(6,8)], type='prob')
+fin <- cbind(temp,predictions3$Y) 
+fin$`predictions3$Y` <- ifelse(fin$`predictions3$Y`<0.25, "Low", 
+                               ifelse(fin$`predictions3$Y`<0.4, "Medium",
+                               ifelse(fin$`predictions3$Y`<0.5, "High", "Very High")))
+names(fin)[3] <- 'Pred'
+print(xtable(spread(fin, bmi, Pred), include.rownames = T))
+```
+
+This table was prettified and color-coded, then included in the presentation thus:
+
+![Table Used In the Presentation](table.png)
+
+
+[^1]: "Effects of Traditional and Western Environments on Prevalence of Type 2 Diabetes in Pima Indians in Mexico and the U.S." 2006. Leslie Schulz, Peter Bennett, Eric Ravussin, Judith Kidd, Kenneth Kidd, Julian Esparza and Mauro E. Valencia.
+http://care.diabetesjournals.org/content/29/8/1866
+
+[^2]: "A patient goes to see a doctor. The doctor performs a test with 99 percent reliability--that is, 99 percent of people who are sick test positive and 99 percent of the healthy people test negative. The doctor knows that only 1 percent of the people in the country are sick. Now the question is: if the patient tests positive, what are the chances the patient is sick?... The intuitive answer is 99 percent, but the correct answer is 50 percent."
+
