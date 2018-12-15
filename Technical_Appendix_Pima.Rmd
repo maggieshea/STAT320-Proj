@@ -308,6 +308,8 @@ names(fin)[3] <- 'Pred'
 print(xtable(spread(fin, bmi, Pred), include.rownames = T))
 ```
 
+\pagebreak
+
 This table was prettified and color-coded in Microsoft Word, then included in the presentation. Both the raw xtable and the color-coded one can be  found on the next page.
 
 ![Table Used In the Presentation](table.png)
