@@ -258,6 +258,11 @@ Our model weighed plasma glucose levels, BMI, age, and pedigree as the most impo
 
 4) Finally, we want to bring a monthly mobile clinic to the Pima Native American population. This would make doctors available for consultations to discuss high risk factors for diabetes. Additionally, doctors could aid in making sustainable diet and exercise plans for specific individuals. The mobile clinic would also have the materials to do a full blood work up on each patient that would provide a more well-rounded picture of diabetes risk.
 
+## Conclusion
+
+Through the data analysis and models created, as is detailed in this appendix, we completed the assigned tasks. We created two models to estimate the probability that an individual female has type II diabetes: the full-variable model that has 79% overall accuracy, and the two-variable model that has 70% overall accuracy. We identified BMI and Age to be the two most important AND easy-to-measure-in-the-filed characteristics to determine particular populations at higher risk for type II diabetes. If given full access to medical infrastructure and lab equipment, we recognize that blood glucose level and blood pressure would further aid in identifying high-risk populations. 
+
+We recognize that the sample population in this data set imposes limitations on the widespread applicability of our model to estimate the likehood than ANY individual has type II diabetes. Firstly, we do not know how the sample population in our data set was chosen for this study or how their vital signs (the variables in this data set) were measured. Secondly is the generalizability of the sample population. Every participant in this data set is self-identified female, was at least 21 years of age at time of intake into the study, lives in the southwest region of the US, and is presumably of Pima Native American genetics. Therefore, our models and identified subset of characteristics is applicable only to individuals that have these characteristics.
 
 [^1]: "Effects of Traditional and Western Environments on Prevalence of Type 2 Diabetes in Pima Indians in Mexico and the U.S." 2006. Leslie Schulz, Peter Bennett, Eric Ravussin, Judith Kidd, Kenneth Kidd, Julian Esparza and Mauro E. Valencia.
 http://care.diabetesjournals.org/content/29/8/1866
