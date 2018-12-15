@@ -22,10 +22,10 @@ This is the technical appendix submitted for the Final Project portion of Statis
 
 This technical appendix details the code we used in our analysis and the creation of the data visualizations that comprised our presentation. 
 
-- Presentation slides can be found [here](rpubs.com/danielnjoo/s320).
-- The Shiny app can be found [here](danielnjoo.shinyapps.io/Pima_Eval_Model/)
-- The 3 page report can be found [here]().
-- The 1 page handout can be found [here]().
+- Presentation slides can be found [here](https://rpubs.com/danielnjoo/s320).
+- The Shiny app can be found [here](https://danielnjoo.shinyapps.io/Pima_Eval_Model/)
+- The 3 page report can be found [here](https://docs.google.com/document/d/1pZmqR1wsdDXH0BszFJS4yRfhTz_UiwXuRjUDS84Au2o/edit).
+- The 1 page handout can be found [here](https://docs.google.com/drawings/d/1lNP0LykSHWJZYHOQ-0HjPgkmHhxqGAZS-qSsYQQKDf4/edit?usp=sharing).
 
 # Initial Loading
 
@@ -312,7 +312,28 @@ This table was prettified and color-coded in Microsoft Word, then included in th
 
 ![Table Used In the Presentation](table.png)
 
-# Shiny App
+
+# Initiatives
+
+Our model weighed plasma glucose levels, BMI, age, and pedigree as the most important predictors of diabetes risk. Two of these - age and pedigree - cannot be controlled, but they can be mediated via a healthy diet and regular exercise. The other two factors - plasma glucose levels and BMI - are also controlled through diet and exercise. We propose four initiatives: diet, exercise, community garden, and monthly mobile clinic. 
+
+1) The diet initiative might include a list of inexpensive healthy foods, a map of where to find them in the supermarket, a recipe book of Pima Native American recipes, and a calendar showing when fresh fruits and vegetables are in season. 
+
+2) The exercise intiative would include typical exercise classes, such as yoga and weight lifting, but also classes like "Dancing and Drumming" that cater more specifically to the Pima Native American population. 
+
+3) We would provide the seeds and tool to create a community garden. We would incentivize participation by providing free food vouchers for the local farmers markets. A community garden would provide fresh, healthy foods to the participants as well as the regular exercise required to take proper care of a garden.
+
+4) Finally, we want to bring a monthly mobile clinic to the Pima Native American population. This would make doctors available for consultations to discuss high risk factors for diabetes. Additionally, doctors could aid in making sustainable diet and exercise plans for specific individuals. The mobile clinic would also have the materials to do a full blood work up on each patient that would provide a more well-rounded picture of diabetes risk.
+
+# Conclusion
+
+Through the data analysis and models created, as is detailed in this appendix, we completed the assigned tasks. We created two models to estimate the probability that an individual female has type II diabetes: the full-variable model that has 79% overall accuracy, and the two-variable model that has 70% overall accuracy. We identified BMI and Age to be the two most important AND easy-to-measure-in-the-filed characteristics to determine particular populations at higher risk for type II diabetes. If given full access to medical infrastructure and lab equipment, we recognize that blood glucose level and blood pressure would further aid in identifying high-risk populations. 
+
+We recognize that the sample population in this data set imposes limitations on the widespread applicability of our model to estimate the likehood than ANY individual has type II diabetes. Firstly, we do not know how the sample population in our data set was chosen for this study or how their vital signs (the variables in this data set) were measured. Secondly is the generalizability of the sample population. Every participant in this data set is self-identified female, was at least 21 years of age at time of intake into the study, lives in the southwest region of the US, and is presumably of Pima Native American genetics. Therefore, our models and identified subset of characteristics is applicable only to individuals that have these characteristics.
+
+# Other Code
+
+## Shiny App
 
 Our Full Model is hosted at the link included in the Introduction, and involved saving the Full Model into an .rds, which was then loaded in Shiny.
 
@@ -392,7 +413,6 @@ server <- function(input, output) {
 
 shinyApp(ui = ui, server = server)
 ```
-
 
 [^1]: "Effects of Traditional and Western Environments on Prevalence of Type 2 Diabetes in Pima Indians in Mexico and the U.S." 2006. Leslie Schulz, Peter Bennett, Eric Ravussin, Judith Kidd, Kenneth Kidd, Julian Esparza and Mauro E. Valencia. http://care.diabetesjournals.org/content/29/8/1866
 
