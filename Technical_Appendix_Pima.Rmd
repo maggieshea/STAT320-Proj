@@ -30,12 +30,8 @@ This technical appendix details the code we used in our analysis and the creatio
 # Initial Loading
 
 ```{r, message=F, warning=F}
-require(tidyverse)
-require(caret)
-require(pROC)
-require(ggpubr)
-require(gridExtra)
-require(xtable)
+require(tidyverse); require(caret); require(pROC); require(ggpubr); require(gridExtra)
+require(xtable); require(ROCR)
 data <- read.delim("diabetes.txt", header = F, sep = ",") # assumes file is in the same directory
 names(data) <- c("prg", "plasma", "bp", "thick", "insulin", "body", "pedigree", "age", "response")
 data$response <- factor(data$response)
@@ -181,6 +177,24 @@ A summary of the model object gives us the relative influences of the variables.
 summary(objModel)
 ```
 
+The values from this summary were included in the presentation in `ggplot` form manually for aesthetic purposes. The code to reproduce it is below. Because it would be redundant to display it again, the output is supressed.
+
+```{r eval=F}
+df <- data.frame("var"=c("Plasma","BMI","Age","Family","Preg","Insulin","BP","Triceps"), 
+                 "val" =c(42,21.7,14.5,9.7,6.4,2.5,1.8,1.4)) 
+df$var <- factor(df$var, levels(df$var) <-
+                   rev(c("Plasma","BMI","Age","Family","Preg","Insulin","BP","Triceps")) )
+df$col <- c(rep(1,4),rep(0,4))
+
+df %>% 
+  ggplot(aes(factor(var), val, fill=factor(col))) + geom_bar(stat='identity') +
+  labs(title="Relative Influence",y="",x="") +
+  scale_fill_manual(values=c("grey", "#F8766D")) +
+  theme(title=element_text(size=30), axis.text.y = element_text(size=16), legend.position="none") +
+  coord_flip()
+```
+
+
 We make predictions on the text set, plot an AUC curve, print the AUC, and the some overall metrics:
 
 ```{r, fig.height=3, fig.width=3}
@@ -199,6 +213,35 @@ We find that the full variable model has an AUC of 85%, overall accuracy of 79%,
 This full variable model is implemented in the Shiny app linked in the Introduction section. Though this satisfied Task (A), we recognized that Task (B) would be hard to complete with 8-variable model. For example, while an x-y plot is possible with two variables, and with three variables, a 3-D plot is possible, visualizing the interaction of more than three variables is impossible.
 
 Therefore we also built a two-variable model, which we referred to in the presentation as the Field Model. 
+
+### Further Evaluation
+
+Although we did not mention it in the presentation, we also did analysis on sensitivity-specificity tradeoffs for different decision thresholds. We opted instead to use 0.5 as our decision threshold in order to avoid overcomplicating the presentation. 
+
+We did, however, note that choosing different cutoffs could more specifically suit the goals of our diabetes predictive model, especially for a field model, i.e. maximizing sensitivity at the cost of specificity by choosing a lower cutoff. This is a valid approach, especially when the disease/what is being classified is especially prevalent.
+
+"According to the proposed method, the cutoff value is higher in places where the disease is less prevalent... For example, the cut-off value for a group of athletes exercising (higher risk/prevalence of dehydration) should be lower than that in general population."[^3]
+
+```{r}
+predictions <- prediction(predictions$Y,testDF$response2)
+
+sens <- data.frame(x=unlist(performance(predictions, "sens")@x.values),
+                   y=unlist(performance(predictions, "sens")@y.values))
+spec <- data.frame(x=unlist(performance(predictions, "spec")@x.values),
+                   y=unlist(performance(predictions, "spec")@y.values))
+
+gg2 <- theme(axis.title.y.right = element_text(colour = "red"), legend.position="none",
+        title = element_text(size=15)) 
+
+sens %>% ggplot(aes(x,y)) +
+  geom_line() +
+  geom_line(data=spec, aes(x,y,col="red")) +
+  scale_y_continuous(sec.axis = sec_axis(~., name = "Specificity")) +
+  labs(x='Decision Threshold', y="Sensitivity") +
+  ggtitle("Sens-Spec Tradeoff for Full Model") + 
+  gg2
+```
+
 
 ## Field Model
 
@@ -225,13 +268,36 @@ conf2$overall; conf2$byClass
 
 This model still has a decent sensitivity (80%), but suffers from a lower specificity (51%). Despite this low specificity, we stand by the usefulness of this model as its positive predictive power is relatively high - 75%. This means unlike the commonly asked brain teaser P(disease | test positive) of a highly reliable test, that 75% of individuals (in the test set) diagnosed with diabetes with  this model actually had diabetes. [^2]
 
+### Further Evaluation
+
+The same sensitivity-specificity tradeoff analysis was done as in the case of the Full Model.
+
+```{r}
+predictions2 <- prediction(predictions2$Y,testDF$response2)
+
+sens2 <- data.frame(x=unlist(performance(predictions, "sens")@x.values),
+                   y=unlist(performance(predictions, "sens")@y.values))
+spec2 <- data.frame(x=unlist(performance(predictions, "spec")@x.values),
+                   y=unlist(performance(predictions, "spec")@y.values))
+
+sens2 %>% ggplot(aes(x,y)) +
+  geom_line() +
+  geom_line(data=spec2, aes(x,y,col="red")) +
+  scale_y_continuous(sec.axis = sec_axis(~., name = "Specificity")) +
+  labs(x='Decision Threshold', y="Sensitivity") +
+  ggtitle("Sens-Spec Tradeoff for Field Model") + 
+  gg2
+```
+
+
 ### Field Model Predictions On Fabricated Data
 
 This model was used later to make predictions on fabricated data consisting of all Age/BMI variations with both variables ranging from 20-60 in increments of 5. The results are shown below:
 
 ```{r xtable, results='asis', comment=NA}
 temp <- data.frame(expand.grid(bmi=seq(20,60,5),age=seq(20,60,5)))
-temp2 <- data.frame(cbind(rep(0,81),rep(0,81),rep(0,81),rep(0,81),rep(0,81),temp[,1],rep(0,81),temp[,2],rep(0,81),rep(0,81)) )
+temp2 <- data.frame(cbind(rep(0,81),rep(0,81),rep(0,81),rep(0,81),rep(0,81),temp[,1],rep(0,81),
+                          temp[,2],rep(0,81),rep(0,81)) )
 names(temp2) <- names(testDF)
 predictions3 <- predict(objModel2, temp2[,c(6,8)], type='prob')
 fin <- cbind(temp,predictions3$Y) 
@@ -242,13 +308,94 @@ names(fin)[3] <- 'Pred'
 print(xtable(spread(fin, bmi, Pred), include.rownames = T))
 ```
 
-This table was prettified and color-coded, then included in the presentation thus:
+This table was prettified and color-coded in Microsoft Word, then included in the presentation. Both the raw xtable and the color-coded one can be  found on the next page.
 
 ![Table Used In the Presentation](table.png)
 
+# Shiny App
 
-[^1]: "Effects of Traditional and Western Environments on Prevalence of Type 2 Diabetes in Pima Indians in Mexico and the U.S." 2006. Leslie Schulz, Peter Bennett, Eric Ravussin, Judith Kidd, Kenneth Kidd, Julian Esparza and Mauro E. Valencia.
-http://care.diabetesjournals.org/content/29/8/1866
+Our Full Model is hosted at the link included in the Introduction, and involved saving the Full Model into an .rds, which was then loaded in Shiny.
+
+```{r eval=F}
+saveRDS(objModel, "final_model.rds")
+```
+
+
+The code for the Shiny app is also included below:
+
+```{r eval=F}
+library(caret)
+library(shiny)
+library(gbm)
+
+ui <- navbarPage("Diabetes Diagnosis Tool",
+  tabPanel("Prediction"),
+    sidebarLayout(
+      sidebarPanel(
+        numericInput('PRG', 'Number of pregnancies', 1, min = 0, max = 20, step = 1,
+                     width = NULL),
+        numericInput('PLASMA', 'Blood plasma glucose levels', 120, min = 0, max = 200, step = 1,
+                     width = NULL),
+        numericInput('BP', 'Blood pressure', 80, min = 0, max = 200, step = 1,
+                     width = NULL),
+        numericInput('THICK', 'Triceps skinfold thickness', 20, min = 0, max = 1000, step = 1,
+                     width = NULL),
+        numericInput('INSULIN', 'Salivary insulin, ', 10, min = 0, max = 200, step = 1,
+                     width = NULL),
+        numericInput('BODY', 'BMI', 30, min = 0, max = 100, step = 0.1,
+                     width = NULL),
+        numericInput('PEDIGREE', 'Family history', 0.5, min = 0, max = 3, step = 0.01,
+                     width = NULL),
+        numericInput('AGE', 'AGE', 30, min = 0, max = 100, step = 1,
+                     width = NULL)
+      ),
+      mainPanel(
+        p("Probability of diabetes: ", style="font-size:40px"),
+        htmlOutput("summary"),
+        htmlOutput("summary2"),
+        br(),
+        p("Values greater than 0.5 reflect model's decision to predict as having diabetes.")
+      )
+    )
+)
+
+server <- function(input, output) {
+  
+  model <- readRDS("final_model.rds")
+  pred_names <- c("PRG", "PLASMA", "BP", "THICK", "INSULIN", "BODY", "PEDIGREE", "AGE")
+  
+  get_pred <- reactive({
+    df <- data.frame("PRG"=input$PRG, "PLASMA"=input$PLASMA, "BP"=input$BP, "THICK"=input$THICK, 
+                     "INSULIN"=input$INSULIN, "BODY"=input$BODY,"PEDIGREE"=input$PEDIGREE, 
+                     "AGE"=input$AGE, "RESPONSE"=0, "RESPONSE2"=0)
+    res <- predict(model, df[,pred_names], type='prob') 
+    res$Y
+    })
+  
+  output$summary <- renderText({
+    val <- ifelse(get_pred()<0.25, "Low", 
+                         ifelse(get_pred()<0.4, "Medium",
+                         ifelse(get_pred()<0.5, "High", "Very High")))
+    if (get_pred()>0.5){
+      paste("<span style=\"font-size:40px; color: red\">", val, "</span>")  
+    } else if (get_pred()>0.4) {
+      paste("<span style=\"font-size:30px; color: pink\">", val, "</span>")  
+    } else {
+      paste("<span style=\"font-size:30px\">", val, "</span>")  
+    }
+  })
+  
+  output$summary2 <- renderText({
+    paste0("<span style=\"font-size:20px\">(", round(get_pred(),2), ")</span>")  
+    })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+
+[^1]: "Effects of Traditional and Western Environments on Prevalence of Type 2 Diabetes in Pima Indians in Mexico and the U.S." 2006. Leslie Schulz, Peter Bennett, Eric Ravussin, Judith Kidd, Kenneth Kidd, Julian Esparza and Mauro E. Valencia. http://care.diabetesjournals.org/content/29/8/1866
 
 [^2]: "A patient goes to see a doctor. The doctor performs a test with 99 percent reliability--that is, 99 percent of people who are sick test positive and 99 percent of the healthy people test negative. The doctor knows that only 1 percent of the people in the country are sick. Now the question is: if the patient tests positive, what are the chances the patient is sick?... The intuitive answer is 99 percent, but the correct answer is 50 percent."
 
+[^3]: "On determining the most appropriate test cut-off value: the case of tests with continuous results." 2016. Farrokh Habibzadeh, Parham Habibzadeh and Mahboobeh Yadollahie. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5082211/
